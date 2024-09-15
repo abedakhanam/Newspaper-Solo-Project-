@@ -24,10 +24,14 @@ Category.initialize(sequelize);
 // Define associations
 Article.belongsTo(User, { foreignKey: 'authorId' });
 User.hasMany(Article, { foreignKey: 'authorId' });
-Comment.belongsTo(Article, { foreignKey: 'articleId' });
-Article.hasMany(Comment, { foreignKey: 'articleId' });
+
+Comment.belongsTo(Article, { foreignKey: 'articleId', as: 'article' });
+Article.hasMany(Comment, { foreignKey: 'articleId', as: 'articleComments' }); // Use unique alias 'articleComments'
+
 Comment.belongsTo(User, { foreignKey: 'userId' });
 User.hasMany(Comment, { foreignKey: 'userId' });
+Category.belongsToMany(Article, { through: 'ArticleCategories' });
+Article.belongsToMany(Category, { through: 'ArticleCategories' });
 
 // Sync database
 sequelize

@@ -21,14 +21,14 @@ export const authenticateToken = (
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    res.sendStatus(401); // Respond with unauthorized status
-    return; // Explicitly return `void`
+    res.sendStatus(401); // Unauthorized if no token
+    return; // Explicitly return `void` after sending response
   }
 
   jwt.verify(token, process.env.JWT_SECRET!, (err, decoded) => {
     if (err) {
-      res.sendStatus(403); // Respond with forbidden status
-      return; // Explicitly return `void`
+      res.sendStatus(403); // Forbidden if token is invalid
+      return; // Explicitly return `void` after sending response
     }
 
     // Type assertion for decoded payload

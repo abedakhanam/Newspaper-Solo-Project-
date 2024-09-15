@@ -6,9 +6,11 @@ import userRoutes from './src/routes/userRoutes';
 import commentRoutes from './src/routes/commentRoutes';
 import authRoutes from './src/routes/authRoutes';
 import articleRoutes from './src/routes/articleRoutes';
+import categoryRoutes from './src/routes/categoryRoutes';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+const PORT = process.env.PORT || 4000;
 
 app.use(express.json()); // Middleware to parse JSON requests
 
@@ -22,6 +24,7 @@ app.use('/api', userRoutes); // Routes for user-related operations
 app.use('/api', commentRoutes); // Routes for comment-related operations
 app.use('/api', authRoutes); // Routes for authentication operations
 app.use('/api', articleRoutes); // Routes for article-related operations
+app.use('/api', categoryRoutes); // Routes for categroy-related operations
 
 // Connect to the database and start the server
 const startServer = async () => {
@@ -30,11 +33,11 @@ const startServer = async () => {
     console.log('Database connection has been established successfully.');
 
     // Sync models with the database
-    await sequelize.sync({ force: true }); // force: true will drop the tables on each start
+    await sequelize.sync({ force: false }); // force: true will drop the tables on each start
     console.log('Models synced with the database.');
 
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      console.log(`Server is running on port ${PORT || 4000}`);
     });
   } catch (error) {
     console.error('Unable to connect to the database:', error);

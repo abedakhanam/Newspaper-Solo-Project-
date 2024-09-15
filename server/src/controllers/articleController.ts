@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Article from '../models/article';
 import Comment from '../models/comment'; // Import the Comment model
+import jwt from 'jsonwebtoken';
 
 // List all articles sorted by recency
 export const getArticles = async (
@@ -10,7 +11,7 @@ export const getArticles = async (
   try {
     const articles = await Article.findAll({
       order: [['createdAt', 'DESC']], // Sort by recency
-      attributes: ['id', 'title', 'thumbnailUrl', 'authorId', 'createdAt'], // Use authorId instead of userId
+      attributes: ['id', 'title', 'thumbnailUrl', 'authorId', 'createdAt'], // Use authorId
       include: [
         {
           model: Comment,
@@ -61,14 +62,22 @@ export const createArticle = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { title, content, thumbnailUrl, authorId } = req.body; // Use authorId
+  const { title, content, thumbnailUrl } = req.body;
 
   try {
+    // Ensure the user is authenticated
+    if (!req.user || !req.user.id) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const authorId = req.user.id; // Get the authorId from the token
+
     const article = await Article.create({
       title,
       content,
       thumbnailUrl,
-      authorId, // Use authorId
+      authorId, // Use the authorId from the token
     });
 
     res.status(201).json(article);
@@ -84,13 +93,17 @@ export const updateArticle = async (
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
-  const { title, content, thumbnailUrl, authorId } = req.body; // Use authorId
+  const { title, content, thumbnailUrl } = req.body;
 
   try {
+    if (!req.user || !req.user.id) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
     const article = await Article.findByPk(id);
 
-    if (article && article.authorId === authorId) {
-      // Use authorId
+    if (article && article.authorId === req.user.id) {
       article.title = title || article.title;
       article.content = content || article.content;
       article.thumbnailUrl = thumbnailUrl || article.thumbnailUrl;
@@ -112,13 +125,16 @@ export const deleteArticle = async (
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
-  const { authorId } = req.body; // Use authorId
 
   try {
+    if (!req.user || !req.user.id) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
     const article = await Article.findByPk(id);
 
-    if (article && article.authorId === authorId) {
-      // Use authorId
+    if (article && article.authorId === req.user.id) {
       await article.destroy();
       res.status(204).send();
     } else {

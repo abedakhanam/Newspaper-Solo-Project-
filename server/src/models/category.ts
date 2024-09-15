@@ -3,7 +3,6 @@ import { Model, DataTypes, Sequelize } from 'sequelize';
 class Category extends Model {
   public id!: number;
   public name!: string;
-  public description!: string;
   public createdAt!: Date;
 
   public static initialize(sequelize: Sequelize) {
@@ -18,10 +17,6 @@ class Category extends Model {
           type: DataTypes.STRING,
           allowNull: false,
           unique: true,
-        },
-        description: {
-          type: DataTypes.STRING,
-          allowNull: true,
         },
         createdAt: {
           type: DataTypes.DATE,

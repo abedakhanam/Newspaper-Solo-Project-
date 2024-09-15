@@ -2,10 +2,11 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/user'; // Ensure the path is correct
 import dotenv from 'dotenv';
+
 dotenv.config(); // Load environment variables
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const { username, email, password } = req.body; // Ensure email is included
+  const { username, email, password } = req.body;
 
   try {
     // Check if the email already exists
@@ -46,7 +47,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
         expiresIn: '1h',
       });
-      res.json({ token });
+
+      // Send token in the response body or another header
+      res.json({ message: 'Logged in successfully', token });
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -54,4 +57,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     console.error('Error during login:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+};
+
+export const logout = (req: Request, res: Response): void => {
+  // Simply notify logout; no cookie to clear
+  res.status(200).json({ message: 'Logged out successfully' });
 };
