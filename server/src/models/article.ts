@@ -4,6 +4,7 @@ import { Category } from './category'; // Import Category model
 interface ArticleAttributes {
   id: number;
   title: string;
+  description: string;
   content: string;
   thumbnailUrl?: string;
   authorId: number;
@@ -20,6 +21,7 @@ class Article
 {
   public id!: number;
   public title!: string;
+  public description!: string;
   public content!: string;
   public thumbnailUrl?: string;
   public authorId!: number;
@@ -50,6 +52,10 @@ class Article
         title: {
           type: DataTypes.STRING,
           allowNull: false,
+        },
+        description: {
+          type: DataTypes.STRING,
+          allowNull: true,
         },
         content: {
           type: DataTypes.TEXT,
