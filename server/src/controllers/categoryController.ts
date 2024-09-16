@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import Category from '../models/category';
-
+import { Category } from '../models/category';
+import { Article } from '../models/article';
 // List all categories
 export const getCategories = async (
   req: Request,
@@ -18,25 +18,47 @@ export const getCategories = async (
 };
 
 // Get a single category by ID
+// Get a single category by ID with its articles and count
 export const getCategoryById = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { id } = req.params;
+  const { id } = req.params; // Get category id from request params
 
   try {
+    // Fetch the category by ID, including the associated articles
     const category = await Category.findByPk(id, {
-      attributes: ['id', 'name', 'createdAt'],
+      include: [
+        {
+          model: Article, // Include associated articles
+          through: { attributes: [] }, // Exclude through table attributes (if using many-to-many)
+          attributes: ['id', 'title', 'content'], // Choose what fields to include from the article
+        },
+      ],
     });
 
     if (category) {
-      res.json(category);
+      // Count the number of articles associated with the category
+      const articleCount = await Article.count({
+        include: [
+          {
+            model: Category,
+            where: { id }, // Use the category ID to filter articles
+          },
+        ],
+      });
+
+      // Return the category details and article count
+      res.json({
+        category,
+        articleCount,
+      });
     } else {
-      res.status(404).json({ error: 'Category not found' });
+      res.status(404).json({ message: 'Category not found' });
     }
   } catch (error) {
     console.error('Error fetching category:', error);
-    res.status(500).json({ error: 'Failed to fetch category' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

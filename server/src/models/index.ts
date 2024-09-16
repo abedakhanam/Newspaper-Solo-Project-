@@ -1,8 +1,8 @@
 import { Sequelize } from 'sequelize';
-import Article from './article';
+import { Article } from './article';
 import User from './user';
 import Comment from './comment';
-import Category from './category';
+import { Category } from './category';
 import dbconfig from '../config/config'; // Adjust the path to your config file
 
 // Destructure the configuration for easier use
@@ -25,11 +25,12 @@ Category.initialize(sequelize);
 Article.belongsTo(User, { foreignKey: 'authorId' });
 User.hasMany(Article, { foreignKey: 'authorId' });
 
-Comment.belongsTo(Article, { foreignKey: 'articleId', as: 'article' });
-Article.hasMany(Comment, { foreignKey: 'articleId', as: 'articleComments' }); // Use unique alias 'articleComments'
+Comment.belongsTo(Article, { foreignKey: 'articleId', as: 'articleComments' }); // Use consistent alias
+Article.hasMany(Comment, { foreignKey: 'articleId', as: 'articleComments' }); // Ensure alias consistency
 
 Comment.belongsTo(User, { foreignKey: 'userId' });
 User.hasMany(Comment, { foreignKey: 'userId' });
+
 Category.belongsToMany(Article, { through: 'ArticleCategories' });
 Article.belongsToMany(Category, { through: 'ArticleCategories' });
 

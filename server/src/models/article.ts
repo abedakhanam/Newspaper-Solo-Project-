@@ -1,13 +1,43 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import { Model, DataTypes, Sequelize, Optional, Association } from 'sequelize';
+import { Category } from './category'; // Import Category model
 
-class Article extends Model {
+interface ArticleAttributes {
+  id: number;
+  title: string;
+  content: string;
+  thumbnailUrl?: string;
+  authorId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ArticleCreationAttributes
+  extends Optional<ArticleAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+
+class Article
+  extends Model<ArticleAttributes, ArticleCreationAttributes>
+  implements ArticleAttributes
+{
   public id!: number;
   public title!: string;
   public content!: string;
-  public thumbnailUrl!: string;
-  public authorId!: number; // Ensure this matches with your association
+  public thumbnailUrl?: string;
+  public authorId!: number;
   public createdAt!: Date;
   public updatedAt!: Date;
+
+  // Association methods
+  public addCategories!: (categories: Category | Category[]) => Promise<void>;
+  public removeCategories!: (
+    categories: Category | Category[]
+  ) => Promise<void>;
+  public setCategories!: (categories: Category | Category[]) => Promise<void>;
+
+  public readonly categories?: Category[]; // Add this to include associated categories
+
+  public static associations: {
+    categories: Association<Article, Category>;
+  };
 
   public static initialize(sequelize: Sequelize): void {
     Article.init(
@@ -30,7 +60,6 @@ class Article extends Model {
           allowNull: true,
         },
         authorId: {
-          // Make sure this matches with the association
           type: DataTypes.INTEGER,
           allowNull: false,
         },
@@ -52,4 +81,4 @@ class Article extends Model {
   }
 }
 
-export default Article;
+export { Article, ArticleCreationAttributes };

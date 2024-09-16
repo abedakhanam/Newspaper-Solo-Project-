@@ -1,6 +1,6 @@
 import express from 'express';
 import sequelize from './src/models'; // Import the initialized Sequelize instance
-
+const cors = require('cors');
 // Import route files
 import userRoutes from './src/routes/userRoutes';
 import commentRoutes from './src/routes/commentRoutes';
@@ -10,10 +10,10 @@ import categoryRoutes from './src/routes/categoryRoutes';
 
 const app = express();
 
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json()); // Middleware to parse JSON requests
-
+app.use(cors());
 // Your API routes go here
 app.get('/', (req, res) => {
   res.send('Hello World');
@@ -37,7 +37,7 @@ const startServer = async () => {
     console.log('Models synced with the database.');
 
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT || 4000}`);
+      console.log(`Server is running on port ${PORT || 3000}`);
     });
   } catch (error) {
     console.error('Unable to connect to the database:', error);

@@ -1,11 +1,27 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+// src/models/category.ts
+import { Model, DataTypes, Sequelize, Association } from 'sequelize';
+import { Article } from './article'; // Import Article model
 
-class Category extends Model {
+interface CategoryAttributes {
+  id?: number;
+  name: string;
+  createdAt?: Date;
+}
+
+class Category extends Model<CategoryAttributes> implements CategoryAttributes {
   public id!: number;
   public name!: string;
   public createdAt!: Date;
 
-  public static initialize(sequelize: Sequelize) {
+  public addArticles!: (articles: Article | Article[]) => Promise<void>;
+  public removeArticles!: (articles: Article | Article[]) => Promise<void>;
+  public setArticles!: (articles: Article | Article[]) => Promise<void>;
+
+  public static associations: {
+    articles: Association<Category, Article>;
+  };
+
+  public static initialize(sequelize: Sequelize): void {
     Category.init(
       {
         id: {
@@ -32,4 +48,4 @@ class Category extends Model {
   }
 }
 
-export default Category;
+export { Category };

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import Comment from '../models/comment';
-import Article from '../models/article';
+import { Article } from '../models/article';
 
 // Create a comment
 export const createComment = async (

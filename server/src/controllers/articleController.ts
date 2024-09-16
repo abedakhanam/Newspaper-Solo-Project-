@@ -1,8 +1,7 @@
 import { Request, Response } from 'express';
-import Article from '../models/article';
+import { Article, ArticleCreationAttributes } from '../models/article';
 import Comment from '../models/comment'; // Import the Comment model
-import jwt from 'jsonwebtoken';
-
+import { Category } from '../models/category';
 // List all articles sorted by recency
 export const getArticles = async (
   req: Request,
@@ -11,12 +10,20 @@ export const getArticles = async (
   try {
     const articles = await Article.findAll({
       order: [['createdAt', 'DESC']], // Sort by recency
-      attributes: ['id', 'title', 'thumbnailUrl', 'authorId', 'createdAt'], // Use authorId
+      attributes: [
+        'id',
+        'title',
+        'content',
+        'thumbnailUrl',
+        'authorId',
+        'createdAt',
+        'updatedAt',
+      ], // Use authorId
       include: [
         {
           model: Comment,
-          attributes: ['id', 'content'],
-          as: 'comments',
+          attributes: ['userId', 'content'],
+          as: 'articleComments', // Use the alias defined in associations
         },
       ],
     });
@@ -29,6 +36,39 @@ export const getArticles = async (
 };
 
 // Get a single article by ID with details
+// Get a single article by ID with details and associated categories
+// export const getArticleById = async (
+//   req: Request,
+//   res: Response
+// ): Promise<void> => {
+//   const { id } = req.params;
+
+//   try {
+//     const article = await Article.findByPk(id, {
+//       include: [
+//         {
+//           model: Comment,
+//           attributes: ['id', 'content', 'createdAt'],
+//           as: 'articleComments',
+//         },
+//         {
+//           model: Category,
+//           through: { attributes: [] }, // Prevent junction table data from being included
+//           attributes: ['id', 'name'], // Include category details
+//         },
+//       ],
+//     });
+
+//     if (article) {
+//       res.json(article);
+//     } else {
+//       res.status(404).json({ error: 'Article not found' });
+//     }
+//   } catch (error) {
+//     console.error('Error fetching article:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
 export const getArticleById = async (
   req: Request,
   res: Response
@@ -41,7 +81,12 @@ export const getArticleById = async (
         {
           model: Comment,
           attributes: ['id', 'content', 'createdAt'],
-          as: 'comments',
+          as: 'articleComments',
+        },
+        {
+          model: Category,
+          through: { attributes: [] }, // Avoid showing the ArticleCategories table data
+          attributes: ['id', 'name'], // Only include necessary fields
         },
       ],
     });
@@ -56,7 +101,6 @@ export const getArticleById = async (
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 // Create a new article
 export const createArticle = async (
   req: Request,
@@ -78,7 +122,7 @@ export const createArticle = async (
       content,
       thumbnailUrl,
       authorId, // Use the authorId from the token
-    });
+    } as ArticleCreationAttributes);
 
     res.status(201).json(article);
   } catch (error) {
@@ -145,3 +189,40 @@ export const deleteArticle = async (
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// Add categories to an existing article
+export const addCategoriesToArticle = async (req: Request, res: Response) => {
+  const articleId = req.params.id; // Get articleId from URL parameters
+  const { categoryIds } = req.body; // Get categoryIds from the request body
+
+  try {
+    // Find the article and categories
+    const article = await Article.findByPk(articleId);
+
+    if (!article) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+
+    const categories = await Category.findAll({
+      where: {
+        id: categoryIds,
+      },
+    });
+
+    if (categories.length !== categoryIds.length) {
+      return res.status(404).json({ error: 'Some categories not found' });
+    }
+
+    // Add categories to the article
+    await article.addCategories(categories);
+
+    return res
+      .status(200)
+      .json({ message: 'Categories added to article successfully' });
+  } catch (error) {
+    console.error('Error adding categories to the article:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+// Get categories associated with an article
