@@ -3,8 +3,7 @@ import { Article, ArticleCreationAttributes } from '../models/article';
 import Comment from '../models/comment'; // Import Comment model
 import { Category } from '../models/category';
 import User from '../models/user';
-import path from 'path';
-import fs from 'fs';
+
 //get all the articles
 export const getArticles = async (
   req: Request,
@@ -21,6 +20,7 @@ export const getArticles = async (
   }
 };
 // Get a single article by ID with specified fields and associated categories and comments
+
 export const getArticleById = async (
   req: Request,
   res: Response
@@ -29,7 +29,13 @@ export const getArticleById = async (
 
   try {
     const article = await Article.findByPk(id, {
-      attributes: ['title', 'description', 'content', 'createdAt'], // Include only specified fields
+      attributes: [
+        'title',
+        'description',
+        'content',
+        'thumbnailUrl',
+        'createdAt',
+      ],
       include: [
         {
           model: Comment,
@@ -38,20 +44,25 @@ export const getArticleById = async (
           include: [
             {
               model: User,
-              attributes: ['username'], // Include the username of the commenter
+              attributes: ['username'],
             },
           ],
         },
         {
           model: Category,
-          through: { attributes: [] }, // Avoid showing the junction table data
-          attributes: ['id', 'name'], // Include category details
+          through: { attributes: [] },
+          attributes: ['id', 'name'],
+        },
+        {
+          model: User,
+          attributes: ['username'],
+          as: 'author', // Ensure this matches the alias defined in associations
         },
       ],
     });
 
     if (article) {
-      res.json(article);
+      res.json(article); // The article should include the author data now
     } else {
       res.status(404).json({ error: 'Article not found' });
     }
@@ -60,7 +71,6 @@ export const getArticleById = async (
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 // Create a new article with all fields, including categories
 export const createArticle = async (
   req: Request,
@@ -160,8 +170,11 @@ export const deleteArticle = async (
     const article = await Article.findByPk(id);
 
     if (article && article.authorId === req.user.id) {
+      // Delete associated comments
+      await Comment.destroy({ where: { articleId: id } });
+      // Now delete the article
       await article.destroy();
-      res.status(204).send();
+      res.status(204).json({ message: 'Article Deleted Successfully' });
     } else {
       res.status(403).json({ error: 'Forbidden' });
     }
@@ -170,7 +183,6 @@ export const deleteArticle = async (
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 // Add categories to an existing article
 export const addCategoriesToArticle = async (
   req: Request,

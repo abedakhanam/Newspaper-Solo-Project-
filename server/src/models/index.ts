@@ -22,11 +22,16 @@ Comment.initialize(sequelize);
 Category.initialize(sequelize);
 
 // Define associations
-Article.belongsTo(User, { foreignKey: 'authorId' });
+Article.belongsTo(User, { foreignKey: 'authorId', as: 'author' });
+
 User.hasMany(Article, { foreignKey: 'authorId' });
 
 Comment.belongsTo(Article, { foreignKey: 'articleId', as: 'articleComments' }); // Use consistent alias
-Article.hasMany(Comment, { foreignKey: 'articleId', as: 'articleComments' }); // Ensure alias consistency
+Article.hasMany(Comment, {
+  foreignKey: 'articleId',
+  as: 'articleComments',
+  onDelete: 'CASCADE', // Enable cascade delete
+}); // Ensure alias consistency
 
 Comment.belongsTo(User, { foreignKey: 'userId' });
 User.hasMany(Comment, { foreignKey: 'userId' });
