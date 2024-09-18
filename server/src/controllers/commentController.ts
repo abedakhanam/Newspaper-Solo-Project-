@@ -1,6 +1,8 @@
+// src/controllers/CommentController.ts
 import { Request, Response } from 'express';
 import Comment from '../models/comment';
 import { Article } from '../models/article';
+import User from '../models/user'; // Import User model
 
 // Create a comment
 export const createComment = async (
@@ -26,25 +28,29 @@ export const createComment = async (
   try {
     // Find the article to ensure it exists
     const article = await Article.findByPk(articleId);
-
     if (!article) {
-      // If article not found, return 404 error
       res
         .status(404)
         .json({ message: `Article with ID ${articleId} not found` });
       return; // End the function if article not found
     }
 
-    // Create the comment if the article exists
+    // Create the comment
     const comment = await Comment.create({
       content,
       articleId,
-      userId, // Set the userId from the authenticated user
+      userId,
     });
+
+    // Retrieve the user's username
+    const user = await User.findByPk(userId);
 
     res.status(201).json({
       message: 'Comment created successfully',
-      comment,
+      comment: {
+        ...comment.get(),
+        username: user?.username, // Include username in the response
+      },
     });
   } catch (error) {
     console.error('Error creating comment:', error);

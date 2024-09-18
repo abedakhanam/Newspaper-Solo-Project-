@@ -7,19 +7,23 @@ import commentRoutes from './src/routes/commentRoutes';
 import authRoutes from './src/routes/authRoutes';
 import articleRoutes from './src/routes/articleRoutes';
 import categoryRoutes from './src/routes/categoryRoutes';
-
+import path from 'path';
 const app = express();
 
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json()); // Middleware to parse JSON requests
+// Enable preflight requests for all routes
+
 app.use(cors());
+
 // Your API routes go here
 app.get('/', (req, res) => {
   res.send('Hello World');
 });
 
 // Use route files
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api', userRoutes); // Routes for user-related operations
 app.use('/api', commentRoutes); // Routes for comment-related operations
 app.use('/api', authRoutes); // Routes for authentication operations

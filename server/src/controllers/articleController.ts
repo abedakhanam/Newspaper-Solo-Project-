@@ -2,7 +2,9 @@ import { Request, Response } from 'express';
 import { Article, ArticleCreationAttributes } from '../models/article';
 import Comment from '../models/comment'; // Import Comment model
 import { Category } from '../models/category';
-
+import User from '../models/user';
+import path from 'path';
+import fs from 'fs';
 //get all the articles
 export const getArticles = async (
   req: Request,
@@ -10,7 +12,7 @@ export const getArticles = async (
 ): Promise<void> => {
   try {
     const articles = await Article.findAll({
-      attributes: ['title', 'description', 'thumbnailUrl', 'createdAt'], // Only get these fields
+      attributes: ['id', 'title', 'description', 'thumbnailUrl', 'createdAt'], // Only get these fields
     });
     res.json(articles);
   } catch (error) {
@@ -33,6 +35,12 @@ export const getArticleById = async (
           model: Comment,
           attributes: ['id', 'content', 'createdAt'],
           as: 'articleComments',
+          include: [
+            {
+              model: User,
+              attributes: ['username'], // Include the username of the commenter
+            },
+          ],
         },
         {
           model: Category,
@@ -59,6 +67,7 @@ export const createArticle = async (
   res: Response
 ): Promise<void> => {
   const { title, description, content, thumbnailUrl, categoryIds } = req.body;
+  // const thumbnailUrl = req.file ? `/uploads/${req.file.filename}` : null; // Set thumbnailUrl
 
   try {
     if (!req.user || !req.user.id) {
@@ -66,17 +75,16 @@ export const createArticle = async (
       return;
     }
 
-    const authorId = req.user.id; // Get the authorId from the token
+    const authorId = req.user.id;
 
     const article = await Article.create({
       title,
       description,
       content,
-      thumbnailUrl,
-      authorId, // Use the authorId from the token
+      thumbnailUrl, // Save thumbnailUrl
+      authorId,
     } as ArticleCreationAttributes);
 
-    // Associate categories with the article
     if (categoryIds && categoryIds.length > 0) {
       const categories = await Category.findAll({
         where: {
@@ -99,7 +107,8 @@ export const updateArticle = async (
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
-  const { title, description, content, thumbnailUrl, categoryIds } = req.body;
+  const { title, description, content, categoryIds } = req.body;
+  const thumbnailUrl = req.file ? `/uploads/${req.file.filename}` : undefined; // Update thumbnailUrl
 
   try {
     if (!req.user || !req.user.id) {
@@ -110,15 +119,13 @@ export const updateArticle = async (
     const article = await Article.findByPk(id);
 
     if (article && article.authorId === req.user.id) {
-      // Update article fields
       article.title = title || article.title;
       article.description = description || article.description;
       article.content = content || article.content;
-      article.thumbnailUrl = thumbnailUrl || article.thumbnailUrl;
+      if (thumbnailUrl) article.thumbnailUrl = thumbnailUrl; // Update thumbnailUrl
 
       await article.save();
 
-      // Update categories
       if (categoryIds && categoryIds.length > 0) {
         const categories = await Category.findAll({
           where: {
@@ -137,7 +144,6 @@ export const updateArticle = async (
     res.status(500).json({ error: 'Internal server error' });
   }
 };
-
 // Delete an article if the user is authorized
 export const deleteArticle = async (
   req: Request,
