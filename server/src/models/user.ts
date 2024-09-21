@@ -1,6 +1,6 @@
 import { Model, DataTypes, Sequelize } from 'sequelize';
-import bcrypt from 'bcrypt';
-import dotenv from 'dotenv';
+import * as bcrypt from 'bcrypt'; // Use named import for bcrypt
+import * as dotenv from 'dotenv'; // Use named import for dotenv
 
 dotenv.config(); // Load environment variables
 

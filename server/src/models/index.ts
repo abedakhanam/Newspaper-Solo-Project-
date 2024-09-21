@@ -36,8 +36,15 @@ Article.hasMany(Comment, {
 Comment.belongsTo(User, { foreignKey: 'userId' });
 User.hasMany(Comment, { foreignKey: 'userId' });
 
-Category.belongsToMany(Article, { through: 'ArticleCategories' });
-Article.belongsToMany(Category, { through: 'ArticleCategories' });
+// Associations;
+Category.belongsToMany(Article, {
+  through: 'ArticleCategories',
+  as: 'articles', // Add an alias for Category to Article
+});
+Article.belongsToMany(Category, {
+  through: 'ArticleCategories',
+  as: 'categories', // Add an alias for Article to Category
+});
 
 // Sync database
 sequelize

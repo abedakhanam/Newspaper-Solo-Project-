@@ -1,6 +1,9 @@
 import { Request, Response } from 'express';
 import { Category } from '../models/category';
 import { Article } from '../models/article';
+import { Model, DataTypes, Sequelize, Optional } from 'sequelize';
+import User from '../models/user'; // Ensure you import the User model
+
 // List all categories
 export const getCategories = async (
   req: Request,
@@ -17,8 +20,67 @@ export const getCategories = async (
   }
 };
 
-// Get a single category by ID
-// Get a single category by ID with its articles and count
+// Get a single category by ID with its articles
+
+// export const getCategoryById = async (
+//   req: Request,
+//   res: Response
+// ): Promise<void> => {
+//   const { id } = req.params; // Get category id from request params
+
+//   try {
+//     // Fetch the category by ID, including the associated articles
+//     const category = await Category.findByPk(id, {
+//       include: [
+//         {
+//           model: Article,
+//           through: { attributes: [] }, // Exclude through table attributes
+//           attributes: [
+//             'id',
+//             'title',
+//             'description',
+//             'thumbnailUrl',
+//             'createdAt',
+//           ], // Include id, title, description, thumbnailUrl, and createdAt
+//           include: [
+//             {
+//               model: User,
+//               as: 'author', // Use the alias for the User model
+//               attributes: ['username'], // Include only the username
+//             },
+//           ],
+//         },
+//       ],
+//     });
+
+//     if (category) {
+//       // Count the number of articles associated with the category
+//       const articleCount = await Article.count({
+//         include: [
+//           {
+//             model: Category,
+//             through: { attributes: [] }, // Exclude join table attributes
+//             where: { id }, // Use the category ID to filter articles
+//           },
+//         ],
+//       });
+
+//       // Return the category details and article count
+//       res.json({
+//         category,
+//         articleCount,
+//       });
+//     } else {
+//       res.status(404).json({ message: 'Category not found' });
+//     }
+//   } catch (error) {
+//     console.error('Error fetching category:', error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
+//get artilces with category id
+
 export const getCategoryById = async (
   req: Request,
   res: Response
@@ -30,9 +92,23 @@ export const getCategoryById = async (
     const category = await Category.findByPk(id, {
       include: [
         {
-          model: Article, // Include associated articles
-          through: { attributes: [] }, // Exclude through table attributes (if using many-to-many)
-          attributes: ['id', 'title', 'content'], // Choose what fields to include from the article
+          model: Article,
+          as: 'articles', // Use the alias defined in the association
+          through: { attributes: [] }, // Exclude through table attributes
+          attributes: [
+            'id',
+            'title',
+            'description',
+            'thumbnailUrl',
+            'createdAt',
+          ], // Include id, title, description, thumbnailUrl, and createdAt
+          include: [
+            {
+              model: User,
+              as: 'author', // Use the alias for the User model
+              attributes: ['username'], // Include only the username
+            },
+          ],
         },
       ],
     });
@@ -43,6 +119,8 @@ export const getCategoryById = async (
         include: [
           {
             model: Category,
+            as: 'categories', // Use the alias for the reverse association
+            through: { attributes: [] }, // Exclude join table attributes
             where: { id }, // Use the category ID to filter articles
           },
         ],
@@ -62,6 +140,8 @@ export const getCategoryById = async (
   }
 };
 
+export default getCategoryById;
+
 // Create a new category
 export const createCategory = async (
   req: Request,
@@ -75,10 +155,7 @@ export const createCategory = async (
   }
 
   try {
-    const category = await Category.create({
-      name,
-    });
-
+    const category = await Category.create({ name });
     res.status(201).json(category);
   } catch (error) {
     console.error('Error creating category:', error);
@@ -99,7 +176,6 @@ export const updateCategory = async (
 
     if (category) {
       category.name = name || category.name;
-
       await category.save();
       res.json(category);
     } else {
@@ -123,7 +199,7 @@ export const deleteCategory = async (
 
     if (category) {
       await category.destroy();
-      res.status(204).send();
+      res.status(204).send(); // No content
     } else {
       res.status(404).json({ error: 'Category not found' });
     }

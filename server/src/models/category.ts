@@ -1,25 +1,28 @@
-// src/models/category.ts
-import { Model, DataTypes, Sequelize, Association } from 'sequelize';
+import { Model, DataTypes, Sequelize, Optional } from 'sequelize';
 import { Article } from './article'; // Import Article model
 
 interface CategoryAttributes {
-  id?: number;
+  id: number;
   name: string;
-  createdAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-class Category extends Model<CategoryAttributes> implements CategoryAttributes {
+interface CategoryCreationAttributes
+  extends Optional<CategoryAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+
+// Augment the Category model to include articles
+class Category
+  extends Model<CategoryAttributes, CategoryCreationAttributes>
+  implements CategoryAttributes
+{
   public id!: number;
   public name!: string;
   public createdAt!: Date;
+  public updatedAt!: Date;
 
-  public addArticles!: (articles: Article | Article[]) => Promise<void>;
-  public removeArticles!: (articles: Article | Article[]) => Promise<void>;
-  public setArticles!: (articles: Article | Article[]) => Promise<void>;
-
-  public static associations: {
-    articles: Association<Category, Article>;
-  };
+  // Adding articles property
+  public readonly articles?: Article[];
 
   public static initialize(sequelize: Sequelize): void {
     Category.init(
@@ -35,6 +38,10 @@ class Category extends Model<CategoryAttributes> implements CategoryAttributes {
           unique: true,
         },
         createdAt: {
+          type: DataTypes.DATE,
+          defaultValue: DataTypes.NOW,
+        },
+        updatedAt: {
           type: DataTypes.DATE,
           defaultValue: DataTypes.NOW,
         },
