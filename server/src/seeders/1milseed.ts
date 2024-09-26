@@ -14,7 +14,7 @@ const seedArticles = async (): Promise<void> => {
     const batchSize = 1000; // Adjust batch size as needed
     const authorIds = [1, 2, 4]; // Author IDs to be used
 
-    for (let i = 0; i < 1000000; i++) {
+    for (let i = 0; i < 3000; i++) {
       const articleData: ArticleCreationAttributes = {
         title: faker.lorem.sentence(),
         description: faker.lorem.paragraph(),

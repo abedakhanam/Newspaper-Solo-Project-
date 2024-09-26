@@ -1,63 +1,66 @@
-import { Article, ArticleCreationAttributes } from './models/article';
-import { Category } from './models/category'; // Ensure correct path
-import { faker } from '@faker-js/faker';
-import sequelize from './models'; // Adjust according to your setup
+import fs from 'fs';
+import path from 'path';
+import { Article } from './models/article'; // Adjust if necessary
+import { Category } from './models/category'; // Adjust if necessary
+import sequelize from './models/index'; // Adjust if necessary to import your sequelize instance
 
-const seedArticles = async (): Promise<void> => {
+const filePath = path.join(__dirname, 'dumy.txt'); // Path to your text file
+
+// Function to get a random user ID from the list [1, 2, 3, 4]
+const getRandomUserId = () => {
+  const userIds = [1, 2, 3, 4];
+  return userIds[Math.floor(Math.random() * userIds.length)];
+};
+
+const seedArticles = async () => {
   try {
-    await sequelize.sync(); // Ensure models are synced
+    // Read and parse the JSON data from the file
+    const data = fs.readFileSync(filePath, 'utf-8');
+    const articles = JSON.parse(data);
 
-    const categories = await Category.findAll();
-    const categoryIds = categories.map((category) => category.id); // Get existing category IDs
+    for (const item of articles) {
+      // Assign a random user ID
+      const userId = getRandomUserId();
 
-    const articlesToInsert: ArticleCreationAttributes[] = [];
-    const batchSize = 1000; // Adjust batch size as needed
-    const authorIds = [1, 2, 4]; // Author IDs to be used
-
-    for (let i = 0; i < 1000000; i++) {
-      const articleData: ArticleCreationAttributes = {
-        title: faker.lorem.sentence(),
-        description: faker.lorem.paragraph(),
-        content: faker.lorem.paragraphs(3),
-        thumbnailUrl: `https://picsum.photos/seed/${faker.string.alphanumeric(
-          10
-        )}/400/300`,
-        authorId: authorIds[Math.floor(Math.random() * authorIds.length)], // Randomly select an author ID
+      // Prepare the article object
+      const articleData = {
+        title: item.title,
+        description: item.description,
+        content: item.content,
+        thumbnailUrl: item.image_url || 'default_thumbnail_url.png', // Use image_url or a default
+        authorId: userId, // Assign the random userId
       };
 
-      // Randomly select categories to associate with the article
-      const randomCategoryCount = Math.floor(Math.random() * 3) + 1; // 1 to 3 random categories
-      const randomCategoryIds = faker.helpers
-        .shuffle(categoryIds)
-        .slice(0, randomCategoryCount);
+      // Create the article
+      const article = await Article.create(articleData);
+      console.log(`Inserted article: ${article.title} by User ID: ${userId}`);
 
-      articlesToInsert.push(articleData);
+      // Handle categories
+      if (item.ai_tag) {
+        const tags = item.ai_tag.split(','); // Assuming ai_tag contains category names separated by commas
 
-      // Insert article categories (if you have a method to associate them)
-      // After you create the article, you can associate categories here if needed
+        for (const tag of tags) {
+          // Find or create the category
+          const [category, created] = await Category.findOrCreate({
+            where: { name: tag.trim() }, // Use the trimmed tag name
+          });
 
-      // Check if we need to insert a batch of articles
-      if (articlesToInsert.length >= batchSize) {
-        await Article.bulkCreate(articlesToInsert);
-        console.log(`Inserted batch of ${batchSize} articles.`);
-        articlesToInsert.length = 0; // Reset for the next batch
+          // Associate the category with the article
+          await article.addCategories(category);
+          console.log(
+            `Associated category: ${category.name} with article: ${article.title}`
+          );
+        }
       }
     }
 
-    // Insert any remaining articles
-    if (articlesToInsert.length) {
-      await Article.bulkCreate(articlesToInsert);
-      console.log(
-        `Inserted final batch of ${articlesToInsert.length} articles.`
-      );
-    }
-
-    console.log('Seeding completed.');
+    console.log('All articles have been seeded!');
   } catch (error) {
     console.error('Error seeding articles:', error);
-  } finally {
-    await sequelize.close(); // Ensure you close the connection
   }
 };
 
-seedArticles();
+// Call the seeder function and ensure the connection is established
+sequelize.sync().then(() => {
+  seedArticles();
+});

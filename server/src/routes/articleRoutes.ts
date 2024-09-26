@@ -8,7 +8,8 @@ import {
   getArticles,
   updateArticle,
   deleteArticle,
-  searchArticles,
+
+  // searchArticles,
 } from '../controllers/articleController';
 import { authenticateToken } from '../middlewares/authMiddleware';
 import upload from '../middlewares/upload';
@@ -17,9 +18,10 @@ const router = Router();
 
 // Public routes
 router.get('/articles', getArticles);
-router.get('/articles/search', searchArticles);
-router.get('/articles/:id', getArticleById);
+// router.get('/articles', searchArticles);
 
+router.get('/articles/:id', getArticleById);
+// router.get('/articles/:id/related', getRelatedArticles);
 // Protected routes
 router.get('/articles/user/me', authenticateToken, getArticlesByUserId); // Fetch user's own articles
 router.post(

@@ -3,6 +3,7 @@ import { Article } from './article';
 import User from './user';
 import Comment from './comment';
 import { Category } from './category';
+import VisitorActivity from './VisitorActivity'; // Import VisitorActivity model
 import dbconfig from '../config/config'; // Adjust the path to your config file
 
 // Destructure the configuration for easier use
@@ -20,35 +21,42 @@ Article.initialize(sequelize);
 User.initialize(sequelize);
 Comment.initialize(sequelize);
 Category.initialize(sequelize);
+VisitorActivity.initialize(sequelize); // Initialize VisitorActivity model
 
 // Define associations
 Article.belongsTo(User, { foreignKey: 'authorId', as: 'author' });
-
 User.hasMany(Article, { foreignKey: 'authorId' });
 
-Comment.belongsTo(Article, { foreignKey: 'articleId', as: 'articleComments' }); // Use consistent alias
+Comment.belongsTo(Article, { foreignKey: 'articleId', as: 'articleComments' });
 Article.hasMany(Comment, {
   foreignKey: 'articleId',
   as: 'articleComments',
-  onDelete: 'CASCADE', // Enable cascade delete
-}); // Ensure alias consistency
+  onDelete: 'CASCADE',
+});
 
 Comment.belongsTo(User, { foreignKey: 'userId' });
 User.hasMany(Comment, { foreignKey: 'userId' });
 
-// Associations;
+// Associations between Category and Article
 Category.belongsToMany(Article, {
   through: 'ArticleCategories',
-  as: 'articles', // Add an alias for Category to Article
+  as: 'articles',
 });
 Article.belongsToMany(Category, {
   through: 'ArticleCategories',
-  as: 'categories', // Add an alias for Article to Category
+  as: 'categories',
+});
+
+// Define associations for VisitorActivity
+VisitorActivity.belongsTo(Article, { foreignKey: 'articleId', as: 'article' });
+VisitorActivity.belongsTo(Category, {
+  foreignKey: 'categoryId',
+  as: 'category',
 });
 
 // Sync database
 sequelize
-  .sync()
+  .sync({ alter: true })
   .then(() => {
     console.log('Database synced');
   })
