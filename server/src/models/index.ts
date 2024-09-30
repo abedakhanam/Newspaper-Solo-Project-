@@ -48,7 +48,11 @@ Article.belongsToMany(Category, {
 });
 
 // Define associations for VisitorActivity
-VisitorActivity.belongsTo(Article, { foreignKey: 'articleId', as: 'article' });
+VisitorActivity.belongsTo(Article, {
+  foreignKey: 'articleId',
+  as: 'article',
+  onDelete: 'CASCADE',
+});
 VisitorActivity.belongsTo(Category, {
   foreignKey: 'categoryId',
   as: 'category',
