@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 
 // Define the expected shape of the JWT payload
 // Define the expected shape of the JWT payload
@@ -8,7 +8,7 @@ interface JwtPayload {
   username: string; // Include username in the payload
 }
 
-declare module 'express-serve-static-core' {
+declare module "express-serve-static-core" {
   interface Request {
     user?: JwtPayload; // Extend the Request interface to include `user`
   }
@@ -19,8 +19,8 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ): void => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
     res.sendStatus(401); // Unauthorized if no token

@@ -1,25 +1,28 @@
 // src/controllers/visitorActivityController.ts
-import { Request, Response } from 'express';
-import { Op } from 'sequelize';
-import { Article } from '../models/article';
-import VisitorActivity from '../models/VisitorActivity';
-import { Client } from '@elastic/elasticsearch'; // Assuming you have an Elasticsearch client setup
-import { SearchResponse } from '@elastic/elasticsearch/lib/api/types';
-import User from '../models/user';
-import { Sequelize } from 'sequelize';
-const client = new Client({
-  node: 'http://localhost:9200', // Update with your Elasticsearch URL
+import { Request, Response } from "express";
+import { Op } from "sequelize";
+import { Article } from "../models/article";
+import VisitorActivity from "../models/VisitorActivity";
+import { Client as ElasticsearchClient } from "@elastic/elasticsearch"; // Assuming you have an Elasticsearch client setup
+import { SearchResponse } from "@elastic/elasticsearch/lib/api/types";
+import User from "../models/user";
+import { Sequelize } from "sequelize";
+const client = new ElasticsearchClient({
+  node: "https://localhost:9200/",
   auth: {
-    username: 'elastic', // Replace with your username
-    password: '7zTXUDoF0UnWwdv1_elp', // Replace with your password
+    username: "elastic",
+    password: "cmSUa+=J61MaYudG_TiL",
+  },
+  tls: {
+    rejectUnauthorized: false,
   },
 });
 // Helper function to get visitor's IP or identifier
 const getVisitorId = (req: Request): string => {
   return (
-    req.headers['x-forwarded-for']?.toString() ||
+    req.headers["x-forwarded-for"]?.toString() ||
     req.socket.remoteAddress ||
-    'unknown'
+    "unknown"
   );
 };
 
@@ -37,7 +40,7 @@ export const createVisitorActivity = async (req: Request, res: Response) => {
     const activity = await VisitorActivity.create(activityData);
     res.status(201).json(activity);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating visitor activity', error });
+    res.status(500).json({ message: "Error creating visitor activity", error });
   }
 };
 
@@ -49,7 +52,7 @@ export const getVisitorActivities = async (req: Request, res: Response) => {
   } catch (error) {
     res
       .status(500)
-      .json({ message: 'Error fetching visitor activities', error });
+      .json({ message: "Error fetching visitor activities", error });
   }
 };
 
@@ -60,10 +63,10 @@ export const getVisitorActivity = async (req: Request, res: Response) => {
     if (activity) {
       res.status(200).json(activity);
     } else {
-      res.status(404).json({ message: 'Visitor activity not found' });
+      res.status(404).json({ message: "Visitor activity not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching visitor activity', error });
+    res.status(500).json({ message: "Error fetching visitor activity", error });
   }
 };
 
@@ -77,10 +80,10 @@ export const updateVisitorActivity = async (req: Request, res: Response) => {
       const updatedActivity = await VisitorActivity.findByPk(req.params.id);
       res.status(200).json(updatedActivity);
     } else {
-      res.status(404).json({ message: 'Visitor activity not found' });
+      res.status(404).json({ message: "Visitor activity not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error updating visitor activity', error });
+    res.status(500).json({ message: "Error updating visitor activity", error });
   }
 };
 
@@ -93,10 +96,10 @@ export const deleteVisitorActivity = async (req: Request, res: Response) => {
     if (deleted) {
       res.status(204).send();
     } else {
-      res.status(404).json({ message: 'Visitor activity not found' });
+      res.status(404).json({ message: "Visitor activity not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting visitor activity', error });
+    res.status(500).json({ message: "Error deleting visitor activity", error });
   }
 };
 // export const getRecommendedArticlesForVisitor = async (
@@ -270,7 +273,7 @@ export const getRecommendedArticlesForVisitor = async (
   const limitNumber = parseInt(limit as string, 10);
 
   if (pageNumber < 1 || limitNumber < 1) {
-    res.status(400).json({ error: 'Page and limit must be positive numbers' });
+    res.status(400).json({ error: "Page and limit must be positive numbers" });
     return;
   }
 
@@ -278,11 +281,11 @@ export const getRecommendedArticlesForVisitor = async (
     // Step 1: Aggregate total view counts for each article
     const articleViewCounts = await VisitorActivity.findAll({
       attributes: [
-        'articleId',
-        [Sequelize.fn('SUM', Sequelize.col('viewCount')), 'totalViews'],
+        "articleId",
+        [Sequelize.fn("SUM", Sequelize.col("viewCount")), "totalViews"],
       ],
-      group: ['articleId'],
-      order: [[Sequelize.fn('SUM', Sequelize.col('viewCount')), 'DESC']],
+      group: ["articleId"],
+      order: [[Sequelize.fn("SUM", Sequelize.col("viewCount")), "DESC"]],
       limit: limitNumber,
       offset: (pageNumber - 1) * limitNumber,
     });
@@ -307,8 +310,8 @@ export const getRecommendedArticlesForVisitor = async (
       include: [
         {
           model: User,
-          as: 'author',
-          attributes: ['username'],
+          as: "author",
+          attributes: ["username"],
         },
       ],
     });
@@ -319,13 +322,13 @@ export const getRecommendedArticlesForVisitor = async (
       description: article.description,
       thumbnailUrl: article.thumbnailUrl,
       createdAt: article.createdAt,
-      author: { username: article.author?.username || 'Unknown' },
+      author: { username: article.author?.username || "Unknown" },
     }));
 
     // Count total number of distinct articles
     const totalViewedArticles = await VisitorActivity.count({
       distinct: true,
-      col: 'articleId',
+      col: "articleId",
     });
 
     const totalPages = Math.ceil(totalViewedArticles / limitNumber);
@@ -337,7 +340,7 @@ export const getRecommendedArticlesForVisitor = async (
       recommendedArticles,
     });
   } catch (error) {
-    console.error('Error fetching recommended articles:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching recommended articles:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

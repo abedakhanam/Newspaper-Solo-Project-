@@ -1,14 +1,14 @@
-const fs = require('fs');
-const path = require('path');
-const { Article } = require('../models/article'); // Adjust if necessary
-const { Category } = require('../models/category'); // Adjust if necessary
-const sequelize = require('../models/index'); // Adjust if necessary to import your sequelize instance
+const fs = require("fs");
+const path = require("path");
+const { Article } = require("../models/article"); // Adjust if necessary
+const { Category } = require("../models/category"); // Adjust if necessary
+const sequelize = require("../models/index"); // Adjust if necessary to import your sequelize instance
 
-const filePath = path.join(__dirname, 'dumy.txt'); // Path to your text file
+const filePath = path.join(__dirname, "dumy.txt"); // Path to your text file
 
 const seedArticles = async () => {
   try {
-    const data = fs.readFileSync(filePath, 'utf-8');
+    const data = fs.readFileSync(filePath, "utf-8");
     const articles = JSON.parse(data);
 
     const userId = 1;
@@ -18,7 +18,7 @@ const seedArticles = async () => {
         title: item.title,
         description: item.description,
         content: item.content,
-        thumbnailUrl: item.image_url || 'default_thumbnail_url.png',
+        thumbnailUrl: item.image_url || "default_thumbnail_url.png",
         authorId: userId,
       };
 
@@ -26,7 +26,7 @@ const seedArticles = async () => {
       console.log(`Inserted article: ${article.title}`);
 
       if (item.ai_tag) {
-        const tags = item.ai_tag.split(',');
+        const tags = item.ai_tag.split(",");
 
         for (const tag of tags) {
           const [category] = await Category.findOrCreate({
@@ -41,9 +41,9 @@ const seedArticles = async () => {
       }
     }
 
-    console.log('All articles have been seeded!');
+    console.log("All articles have been seeded!");
   } catch (error) {
-    console.error('Error seeding articles:', error);
+    console.error("Error seeding articles:", error);
   }
 };
 

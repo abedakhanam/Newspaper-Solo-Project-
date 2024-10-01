@@ -1,8 +1,8 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
-import * as bcrypt from 'bcrypt'; // Use named import for bcrypt
-import * as dotenv from 'dotenv'; // Use named import for dotenv
+import { Model, DataTypes, Sequelize } from "sequelize";
+import * as bcrypt from "bcrypt"; // Use named import for bcrypt
+// import * as dotenv from 'dotenv'; // Use named import for dotenv
 
-dotenv.config(); // Load environment variables
+// dotenv.config(); // Load environment variables
 
 class User extends Model {
   public id!: number;
@@ -54,7 +54,7 @@ class User extends Model {
       },
       {
         sequelize,
-        tableName: 'users',
+        tableName: "users",
         timestamps: true,
       }
     );

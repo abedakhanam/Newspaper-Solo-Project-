@@ -153,18 +153,18 @@
 // run().catch(console.error);
 
 //new sfresh script
-import { Article, ArticleCreationAttributes } from '../src/models/article';
-import { Category } from '../src/models/category';
-import User from '../src/models/user';
-import { faker } from '@faker-js/faker';
-import sequelize from '../src/models/index';
-import { Client as ElasticsearchClient } from '@elastic/elasticsearch';
+import { Article, ArticleCreationAttributes } from "../src/models/article";
+import { Category } from "../src/models/category";
+import User from "../src/models/user";
+import { faker } from "@faker-js/faker";
+import sequelize from "../src/models/index";
+import { Client as ElasticsearchClient } from "@elastic/elasticsearch";
 
 const esClient = new ElasticsearchClient({
-  node: 'http://localhost:9200',
+  node: "http://localhost:9200",
   auth: {
-    username: 'elastic',
-    password: '7zTXUDoF0UnWwdv1_elp', // Replace with your actual password
+    username: "elastic",
+    password: "cmSUa+=J61MaYudG_TiL", // Replace with your actual password
   },
 });
 
@@ -172,7 +172,7 @@ const seedArticles = async (): Promise<void> => {
   try {
     await sequelize.sync();
     await esClient.ping();
-    console.log('Connected to Elasticsearch.');
+    console.log("Connected to Elasticsearch.");
 
     const categories = await Category.findAll();
     const users = await User.findAll();
@@ -182,7 +182,7 @@ const seedArticles = async (): Promise<void> => {
     const userIds = users.map((user) => user.id);
 
     // Generate and insert 2000 articles
-    for (let i = 0; i < 1000000; i++) {
+    for (let i = 0; i < 1000; i++) {
       const articleData: ArticleCreationAttributes = {
         title: faker.lorem.sentence(),
         description: faker.lorem.paragraph(),
@@ -217,11 +217,11 @@ const seedArticles = async (): Promise<void> => {
 
           // Get the author's username
           const author = users.find((user) => user.id === article.authorId);
-          const authorUsername = author ? author.username : 'Unknown';
+          const authorUsername = author ? author.username : "Unknown";
 
           // Add the article and its associated categories to the body
           body.push(
-            { index: { _index: 'articles', _id: article.id.toString() } },
+            { index: { _index: "articles", _id: article.id.toString() } },
             {
               title: article.title,
               description: article.description,
@@ -242,13 +242,13 @@ const seedArticles = async (): Promise<void> => {
       }
     }
 
-    console.log('Seeding completed.');
+    console.log("Seeding completed.");
   } catch (error) {
-    console.error('Error seeding articles:', error);
+    console.error("Error seeding articles:", error);
   } finally {
     await sequelize.close();
     await esClient.close();
-    console.log('Database and Elasticsearch connections closed.');
+    console.log("Database and Elasticsearch connections closed.");
   }
 };
 

@@ -1,19 +1,22 @@
-import { Request, Response } from 'express';
-import { Article, ArticleCreationAttributes } from '../models/article';
-import Comment from '../models/comment';
-import { Category } from '../models/category';
-import User from '../models/user';
-import { Op, Sequelize } from 'sequelize';
-import { Client } from '@elastic/elasticsearch'; // Import Elasticsearch Client
-import { SearchResponse } from '@elastic/elasticsearch/lib/api/types'; // Import SearchResponse type
-import { io } from '../../index';
-import VisitorActivity from '../models/VisitorActivity';
+import { Request, Response } from "express";
+import { Article, ArticleCreationAttributes } from "../models/article";
+import Comment from "../models/comment";
+import { Category } from "../models/category";
+import User from "../models/user";
+import { Op, Sequelize } from "sequelize";
+import { Client as ElasticsearchClient } from "@elastic/elasticsearch"; // Import Elasticsearch Client
+import { SearchResponse } from "@elastic/elasticsearch/lib/api/types"; // Import SearchResponse type
+import { io } from "../../index";
+import VisitorActivity from "../models/VisitorActivity";
 // Initialize your Elasticsearch client
-const client = new Client({
-  node: 'http://localhost:9200', // Update with your Elasticsearch URL
+const client = new ElasticsearchClient({
+  node: "https://localhost:9200/",
   auth: {
-    username: 'elastic', // Replace with your username
-    password: '7zTXUDoF0UnWwdv1_elp', // Replace with your password
+    username: "elastic",
+    password: "cmSUa+=J61MaYudG_TiL",
+  },
+  tls: {
+    rejectUnauthorized: false,
   },
 });
 interface ArticleSource {
@@ -207,15 +210,15 @@ export const getArticles = async (
   const limitNumber = parseInt(limit as string, 10);
 
   if (pageNumber < 1 || limitNumber < 1) {
-    res.status(400).json({ error: 'Page and limit must be positive numbers' });
+    res.status(400).json({ error: "Page and limit must be positive numbers" });
     return;
   }
 
   try {
     // If search query is provided, use Elasticsearch
-    if (search && typeof search === 'string' && search.trim().length > 0) {
+    if (search && typeof search === "string" && search.trim().length > 0) {
       const response = await client.search({
-        index: 'articles',
+        index: "articles",
         body: {
           query: {
             bool: {
@@ -236,7 +239,7 @@ export const getArticles = async (
           description: source.description,
           thumbnailUrl: source.thumbnailUrl,
           createdAt: source.createdAt,
-          author: { username: source.username || 'Unknown' }, // Include username from Elasticsearch
+          author: { username: source.username || "Unknown" }, // Include username from Elasticsearch
         };
       });
 
@@ -247,17 +250,17 @@ export const getArticles = async (
     // If no search query, fetch all articles from PostgreSQL
     const offset = (pageNumber - 1) * limitNumber;
     const { count, rows } = await Article.findAndCountAll({
-      attributes: ['id', 'title', 'description', 'thumbnailUrl', 'createdAt'],
+      attributes: ["id", "title", "description", "thumbnailUrl", "createdAt"],
       include: [
         {
           model: User,
-          attributes: ['username'],
-          as: 'author',
+          attributes: ["username"],
+          as: "author",
         },
       ],
       limit: limitNumber,
       offset: offset,
-      order: [['createdAt', 'DESC']],
+      order: [["createdAt", "DESC"]],
     });
 
     const articles = rows.map((article) => ({
@@ -266,7 +269,7 @@ export const getArticles = async (
       description: article.description,
       thumbnailUrl: article.thumbnailUrl,
       createdAt: article.createdAt,
-      author: { username: article.author?.username || 'Unknown' }, // Include username from PostgreSQL
+      author: { username: article.author?.username || "Unknown" }, // Include username from PostgreSQL
     }));
 
     res.json({
@@ -276,8 +279,8 @@ export const getArticles = async (
       articles,
     });
   } catch (error) {
-    console.error('Error fetching articles:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching articles:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 //
@@ -504,7 +507,7 @@ export const getArticlesByUserId = async (
   const { page = 1, limit = 10, search } = req.query;
 
   if (!userId) {
-    res.status(401).json({ error: 'Unauthorized' });
+    res.status(401).json({ error: "Unauthorized" });
     return;
   }
 
@@ -512,7 +515,7 @@ export const getArticlesByUserId = async (
   const limitNumber = parseInt(limit as string, 10);
 
   if (pageNumber < 1 || limitNumber < 1) {
-    res.status(400).json({ error: 'Page and limit must be positive numbers' });
+    res.status(400).json({ error: "Page and limit must be positive numbers" });
     return;
   }
 
@@ -520,9 +523,9 @@ export const getArticlesByUserId = async (
     let response: SearchResponse<any>;
 
     // If search query is provided, filter by search query
-    if (search && typeof search === 'string' && search.trim().length > 0) {
+    if (search && typeof search === "string" && search.trim().length > 0) {
       response = await client.search({
-        index: 'articles',
+        index: "articles",
         body: {
           query: {
             bool: {
@@ -541,21 +544,21 @@ export const getArticlesByUserId = async (
           },
           from: (pageNumber - 1) * limitNumber,
           size: limitNumber,
-          sort: [{ createdAt: { order: 'desc' } }],
+          sort: [{ createdAt: { order: "desc" } }],
           track_total_hits: true, // Ensure accurate total count
         },
       });
     } else {
       // If no search query, just filter by the user's articles
       response = await client.search({
-        index: 'articles',
+        index: "articles",
         body: {
           query: {
             term: { authorId: userId }, // Filter by user ID
           },
           from: (pageNumber - 1) * limitNumber,
           size: limitNumber,
-          sort: [{ createdAt: { order: 'desc' } }],
+          sort: [{ createdAt: { order: "desc" } }],
           track_total_hits: true, // Ensure accurate total count
         },
       });
@@ -567,12 +570,12 @@ export const getArticlesByUserId = async (
         const article = hit._source as ArticleSource; // Cast to ArticleSource
 
         // Attempt to fetch the username directly
-        let username = article.username || 'Unknown';
+        let username = article.username || "Unknown";
 
         // If username is still unknown, fetch from the database
-        if (username === 'Unknown') {
+        if (username === "Unknown") {
           const articleFromDb = await Article.findByPk(hit._id, {
-            include: [{ model: User, as: 'author', attributes: ['username'] }],
+            include: [{ model: User, as: "author", attributes: ["username"] }],
           });
           if (articleFromDb && articleFromDb.author) {
             username = articleFromDb.author.username;
@@ -592,7 +595,7 @@ export const getArticlesByUserId = async (
 
     // Safely handle total count
     const total = response.hits.total
-      ? typeof response.hits.total === 'number'
+      ? typeof response.hits.total === "number"
         ? response.hits.total
         : response.hits.total.value
       : 0; // Default to 0 if total is undefined
@@ -605,8 +608,8 @@ export const getArticlesByUserId = async (
       articles,
     });
   } catch (error) {
-    console.error('Error fetching user articles:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching user articles:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -724,34 +727,34 @@ export const getArticleById = async (
       include: [
         {
           model: User,
-          as: 'author',
-          attributes: ['username'],
+          as: "author",
+          attributes: ["username"],
         },
         {
           model: Comment,
-          as: 'articleComments',
+          as: "articleComments",
           include: [
             {
               model: User,
-              attributes: ['username'],
+              attributes: ["username"],
             },
           ],
         },
         {
           model: Category,
-          as: 'categories',
-          attributes: ['id', 'name'],
+          as: "categories",
+          attributes: ["id", "name"],
         },
       ],
     });
 
     if (!article) {
-      res.status(404).json({ error: 'Article not found' });
+      res.status(404).json({ error: "Article not found" });
       return;
     }
 
     // Log visitor activity
-    const visitorId = req.ip || 'unknown';
+    const visitorId = req.ip || "unknown";
     const articleId = Number(id); // Convert string ID to a number
 
     // Find or create a VisitorActivity record for this visitor and article
@@ -780,7 +783,7 @@ export const getArticleById = async (
     // Increment the view count in Elasticsearch
     try {
       await client.update({
-        index: 'articles',
+        index: "articles",
         id: String(articleId),
         body: {
           script: {
@@ -806,12 +809,12 @@ export const getArticleById = async (
         },
       });
     } catch (updateError) {
-      console.error('Error updating Elasticsearch:', updateError);
+      console.error("Error updating Elasticsearch:", updateError);
       // Handle the error (e.g., log it or send a notification)
     }
 
     // Count how many times the article has been viewed by all visitors
-    const clickCount = await VisitorActivity.sum('viewCount', {
+    const clickCount = await VisitorActivity.sum("viewCount", {
       where: { articleId },
     });
 
@@ -819,14 +822,14 @@ export const getArticleById = async (
       include: [
         {
           model: User,
-          as: 'author',
-          attributes: ['username'],
+          as: "author",
+          attributes: ["username"],
         },
       ],
       where: {
         id: { [Op.ne]: id }, // Exclude the current article
       },
-      attributes: ['id', 'title', 'description', 'thumbnailUrl', 'createdAt'],
+      attributes: ["id", "title", "description", "thumbnailUrl", "createdAt"],
       limit: 5,
     });
 
@@ -839,8 +842,8 @@ export const getArticleById = async (
       relatedArticles,
     });
   } catch (error) {
-    console.error('Error fetching article:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error fetching article:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 //only details
@@ -971,7 +974,7 @@ export const createArticle = async (
 
   try {
     if (!req.user || !req.user.id) {
-      res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: "Unauthorized" });
       return;
     }
 
@@ -986,7 +989,7 @@ export const createArticle = async (
     });
 
     await client.index({
-      index: 'articles',
+      index: "articles",
       id: article.id.toString(),
       body: {
         title,
@@ -1008,19 +1011,19 @@ export const createArticle = async (
     }
 
     const associatedCategories = await article.getCategories({
-      attributes: ['id', 'name'],
+      attributes: ["id", "name"],
     });
 
     // Emit event to notify clients
-    io.emit('articleCreated', article);
+    io.emit("articleCreated", article);
 
     res.status(201).json({
       article,
       categoryIds: associatedCategories.map((cat) => cat.id),
     });
   } catch (error) {
-    console.error('Error creating article:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error creating article:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -1037,7 +1040,7 @@ export const updateArticle = async (
 
   try {
     if (!req.user || !req.user.id) {
-      res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: "Unauthorized" });
       return;
     }
 
@@ -1062,12 +1065,12 @@ export const updateArticle = async (
       }
 
       const updatedCategories = await article.getCategories({
-        attributes: ['id', 'name'],
+        attributes: ["id", "name"],
       });
 
       // Update the article in Elasticsearch
       await client.update({
-        index: 'articles',
+        index: "articles",
         id: id.toString(),
         body: {
           doc: {
@@ -1082,18 +1085,18 @@ export const updateArticle = async (
       });
 
       // Emit event to notify clients
-      io.emit('articleUpdated', article);
+      io.emit("articleUpdated", article);
 
       res.json({
         ...article.get(),
         categoryIds: updatedCategories.map((cat) => cat.id),
       });
     } else {
-      res.status(403).json({ error: 'Forbidden' });
+      res.status(403).json({ error: "Forbidden" });
     }
   } catch (error) {
-    console.error('Error updating article:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error updating article:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -1106,7 +1109,7 @@ export const deleteArticle = async (
 
   try {
     if (!req.user || !req.user.id) {
-      res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: "Unauthorized" });
       return;
     }
 
@@ -1118,20 +1121,20 @@ export const deleteArticle = async (
 
       // Remove the article from Elasticsearch
       await client.delete({
-        index: 'articles',
+        index: "articles",
         id: id.toString(),
       });
 
       // Emit event to notify clients
-      io.emit('articleDeleted', id);
+      io.emit("articleDeleted", id);
 
-      res.status(204).json({ message: 'Article Deleted Successfully' });
+      res.status(204).json({ message: "Article Deleted Successfully" });
     } else {
-      res.status(403).json({ error: 'Forbidden' });
+      res.status(403).json({ error: "Forbidden" });
     }
   } catch (error) {
-    console.error('Error deleting article:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error deleting article:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 // Add categories to an existing article
@@ -1146,7 +1149,7 @@ export const addCategoriesToArticle = async (
     const article = await Article.findByPk(articleId);
 
     if (!article) {
-      res.status(404).json({ error: 'Article not found' });
+      res.status(404).json({ error: "Article not found" });
       return;
     }
 
@@ -1157,7 +1160,7 @@ export const addCategoriesToArticle = async (
     });
 
     if (categories.length !== categoryIds.length) {
-      res.status(404).json({ error: 'Some categories not found' });
+      res.status(404).json({ error: "Some categories not found" });
       return;
     }
 
@@ -1165,9 +1168,9 @@ export const addCategoriesToArticle = async (
 
     res
       .status(200)
-      .json({ message: 'Categories added to article successfully' });
+      .json({ message: "Categories added to article successfully" });
   } catch (error) {
-    console.error('Error adding categories to article:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error("Error adding categories to article:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };

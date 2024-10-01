@@ -1,14 +1,20 @@
-import { Article } from '../src/models/article';
-import { Category } from '../src/models/category';
-import User from '../src/models/user';
-import sequelize from '../src/models/index';
-import { Client as ElasticsearchClient } from '@elastic/elasticsearch';
+import { Article } from "../src/models/article";
+import { Category } from "../src/models/category";
+import User from "../src/models/user";
+import sequelize from "../src/models/index";
+import { Client as ElasticsearchClient } from "@elastic/elasticsearch";
+import https from "https"; // Import https for agent configuration
 
+// Set up Elasticsearch client
 const esClient = new ElasticsearchClient({
-  node: 'http://localhost:9200',
+  node: "https://localhost:9200",
   auth: {
-    username: 'elastic',
-    password: '7zTXUDoF0UnWwdv1_elp', // Replace with your actual password
+    username: "elastic",
+    password: "cmSUa+=J61MaYudG_TiL", // Replace with your actual password
+  },
+  // Setting up agent to handle self-signed certificates
+  tls: {
+    rejectUnauthorized: false, // Accept self-signed certificates
   },
 });
 
@@ -16,9 +22,8 @@ const indexArticles = async (): Promise<void> => {
   try {
     await sequelize.sync();
     await esClient.ping();
-    console.log('Connected to Elasticsearch.');
+    console.log("Connected to Elasticsearch.");
 
-    const categories = await Category.findAll();
     const users = await User.findAll();
     const batchSize = 1000;
     let offset = 0;
@@ -29,7 +34,12 @@ const indexArticles = async (): Promise<void> => {
       const articles = await Article.findAll({
         limit: batchSize,
         offset,
-        include: [Category],
+        include: [
+          {
+            model: Category,
+            as: "categories", // Use the alias defined in the association
+          },
+        ],
       });
 
       if (articles.length === 0) {
@@ -41,15 +51,15 @@ const indexArticles = async (): Promise<void> => {
 
       for (const article of articles) {
         const author = users.find((user) => user.id === article.authorId);
-        const authorUsername = author ? author.username : 'Unknown';
+        const authorUsername = author ? author.username : "Unknown";
 
-        // Handle the possibility that 'article.Categories' might be undefined
+        // Handle category IDs
         const categoryIds = article.categories
           ? article.categories.map((cat) => cat.id)
           : [];
 
         body.push(
-          { index: { _index: 'articles', _id: article.id.toString() } },
+          { index: { _index: "articles", _id: article.id.toString() } },
           {
             title: article.title,
             description: article.description,
@@ -59,7 +69,7 @@ const indexArticles = async (): Promise<void> => {
             username: authorUsername,
             createdAt: article.createdAt,
             updatedAt: article.updatedAt,
-            categoryIds, // Empty array if no categories
+            categoryIds, // Array of category IDs
           }
         );
       }
@@ -72,13 +82,13 @@ const indexArticles = async (): Promise<void> => {
       offset += batchSize;
     }
 
-    console.log('Indexing completed.');
+    console.log("Indexing completed.");
   } catch (error) {
-    console.error('Error indexing articles:', error);
+    console.error("Error indexing articles:", error);
   } finally {
     await sequelize.close();
     await esClient.close();
-    console.log('Database and Elasticsearch connections closed.');
+    console.log("Database and Elasticsearch connections closed.");
   }
 };
 

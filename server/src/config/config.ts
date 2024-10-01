@@ -13,9 +13,9 @@ interface Configs {
 }
 
 const dbconfig = {
-  database: 'newspaper_db',
-  username: 'postgres',
-  password: 'pc9874',
+  database: 'newspaper',
+  username: 'mysqlclient',
+  password: 'admin',
   host: 'localhost',
   dialect: 'postgres',
   port: 5432,
