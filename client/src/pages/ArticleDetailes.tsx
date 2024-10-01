@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { toast } from 'react-toastify';
-import ConfirmModal from '../components/ConfirmModal';
-import { io } from 'socket.io-client';
+import React, { useState, useRef, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { toast } from "react-toastify";
+import ConfirmModal from "../components/ConfirmModal";
+// import { io } from 'socket.io-client';
+import { fetchWithCache } from "../utils/apiFetcher";
 interface User {
   id: number; // or string, depending on your implementation
   username: string;
@@ -45,10 +46,10 @@ interface RelatedArticle {
   };
 }
 
-interface ApiResponse {
-  article: Article;
-  relatedArticles: RelatedArticle[];
-}
+// interface ApiResponse {
+//   article: Article;
+//   relatedArticles: RelatedArticle[];
+// }
 
 const ArticleDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -56,26 +57,28 @@ const ArticleDetails: React.FC = () => {
   const [article, setArticle] = useState<Article | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [editCommentId, setEditCommentId] = useState<number | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState<number | null>(null);
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const commentRef = useRef<HTMLTextAreaElement>(null);
   const socket = useRef<any>(null);
   const fetchArticle = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/articles/${id}`);
-      if (!response.ok) throw new Error('Network response was not ok');
-      console.log('article details page ');
-      const data: ApiResponse = await response.json();
+      const data = await fetchWithCache(
+        `http://localhost:3000/api/articles/${id}`
+      );
+      // if (!response.ok) throw new Error('Network response was not ok');
+      // console.log('article details page ');
+      // const data: ApiResponse = await response.json();
       setArticle(data.article);
       setRelatedArticles(data.relatedArticles);
     } catch (error) {
-      console.error('Error fetching article details:', error);
+      console.error("Error fetching article details:", error);
     } finally {
       setLoading(false);
     }
@@ -83,20 +86,20 @@ const ArticleDetails: React.FC = () => {
 
   useEffect(() => {
     // Initialize socket connection when the component mounts
-    socket.current = io('http://localhost:3000'); // <--- Initialize socket
+    // socket.current = io('http://localhost:3000'); // <--- Initialize socket
 
     fetchArticle();
 
     // Cleanup socket connection when the component unmounts
-    return () => {
-      socket.current.disconnect(); // <--- Cleanup on unmount
-    };
+    // return () => {
+    //   socket.current.disconnect(); // <--- Cleanup on unmount
+    // };
   }, [id]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      setError('You must be logged in to comment.');
+      setError("You must be logged in to comment.");
       return;
     }
 
@@ -104,13 +107,13 @@ const ArticleDetails: React.FC = () => {
       ? `http://localhost:3000/api/comments/${editCommentId}`
       : `http://localhost:3000/api/articles/${id}/comments`;
 
-    const method = editCommentId ? 'PUT' : 'POST';
+    const method = editCommentId ? "PUT" : "POST";
 
     try {
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ content: comment }),
@@ -119,29 +122,29 @@ const ArticleDetails: React.FC = () => {
       if (!response.ok) {
         throw new Error(
           editCommentId
-            ? 'Failed to update comment'
-            : 'Failed to create comment'
+            ? "Failed to update comment"
+            : "Failed to create comment"
         );
       }
 
-      setComment('');
+      setComment("");
       setEditCommentId(null);
       fetchArticle();
       toast.success(
         editCommentId
-          ? 'Comment updated successfully!'
-          : 'Comment created successfully!'
+          ? "Comment updated successfully!"
+          : "Comment created successfully!"
       );
 
       if (commentRef.current) {
         commentRef.current.focus();
       }
     } catch (error) {
-      console.error('Error handling comment:', error);
+      console.error("Error handling comment:", error);
       setError(
         editCommentId
-          ? 'Failed to update comment.'
-          : 'Failed to create comment.'
+          ? "Failed to update comment."
+          : "Failed to create comment."
       );
     }
   };
@@ -161,20 +164,20 @@ const ArticleDetails: React.FC = () => {
       const response = await fetch(
         `http://localhost:3000/api/comments/${commentToDelete}`,
         {
-          method: 'DELETE',
+          method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
 
-      if (!response.ok) throw new Error('Failed to delete comment');
+      if (!response.ok) throw new Error("Failed to delete comment");
 
-      toast.success('Comment deleted successfully!');
+      toast.success("Comment deleted successfully!");
       fetchArticle();
     } catch (error) {
-      console.error('Error deleting comment:', error);
-      setError('Failed to delete comment.');
+      console.error("Error deleting comment:", error);
+      setError("Failed to delete comment.");
     } finally {
       setIsModalOpen(false);
       setCommentToDelete(null);
@@ -183,13 +186,13 @@ const ArticleDetails: React.FC = () => {
 
   const handleDeleteArticle = async () => {
     if (!user) {
-      setError('You must be logged in to delete this article.');
+      setError("You must be logged in to delete this article.");
       return;
     }
 
     try {
       const response = await fetch(`http://localhost:3000/api/articles/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -197,22 +200,22 @@ const ArticleDetails: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete article');
+        throw new Error(errorData.message || "Failed to delete article");
       }
 
       // Emit socket event to notify about article deletion
-      socket.current.emit('articleDeleted', id);
+      socket.current.emit("articleDeleted", id);
 
       // Show success toast
-      toast.success('Article deleted successfully!');
+      toast.success("Article deleted successfully!");
 
       // Delay navigation to allow toast to be visible
       setTimeout(() => {
-        navigate('/'); // Navigate to home page
+        navigate("/"); // Navigate to home page
       }, 2000); // 2000 ms = 2 seconds
-    } catch (error) {
-      console.error('Error deleting article:', error);
-      setError(error.message || 'Failed to delete article.');
+    } catch (error: any) {
+      console.error("Error deleting article:", error);
+      setError(error.message || "Failed to delete article.");
     } finally {
       setIsModalOpen(false);
     }
@@ -220,14 +223,14 @@ const ArticleDetails: React.FC = () => {
 
   const handleCancelEdit = () => {
     setEditCommentId(null);
-    setComment('');
+    setComment("");
     if (commentRef.current) {
       commentRef.current.focus();
     }
   };
 
   const getImageUrl = (url: string) => {
-    return url && url.startsWith('http') ? url : `http://localhost:3000${url}`;
+    return url && url.startsWith("http") ? url : `http://localhost:3000${url}`;
   };
 
   if (loading) return <p className="text-center text-gray-600">Loading...</p>;
@@ -235,8 +238,8 @@ const ArticleDetails: React.FC = () => {
     return <p className="text-center text-gray-600">Article not found</p>;
 
   const isAuthor = user && user.username === article.author.username;
-  const capitalizeFirstLetter = (username) => {
-    if (!username) return '';
+  const capitalizeFirstLetter = (username: any) => {
+    if (!username) return "";
     return username.charAt(0).toUpperCase() + username.slice(1).toLowerCase();
   };
   return (
@@ -286,11 +289,11 @@ const ArticleDetails: React.FC = () => {
             <div className="mt-2 text-sm text-gray-500">
               {article.categories && article.categories.length > 0 ? (
                 <span>
-                  Categories:{' '}
+                  Categories:{" "}
                   {article.categories.map((cat, index) => (
                     <span key={cat.id}>
                       {cat.name}
-                      {index < article.categories.length - 1 ? ', ' : ''}
+                      {index < article.categories.length - 1 ? ", " : ""}
                     </span>
                   ))}
                 </span>
@@ -352,7 +355,7 @@ const ArticleDetails: React.FC = () => {
 
         <div className="mt-4">
           <h2 className="text-l font-semibold">
-            {editCommentId ? 'Edit Comment' : 'Leave a Comment'}:
+            {editCommentId ? "Edit Comment" : "Leave a Comment"}:
           </h2>
           {error && <p className="text-red-500">{error}</p>}
           <form
@@ -372,7 +375,7 @@ const ArticleDetails: React.FC = () => {
                 type="submit"
                 className="p-2 bg-blue-600 text-white rounded-sm hover:bg-blue-700 transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
-                {editCommentId ? 'Update' : 'Submit'}
+                {editCommentId ? "Update" : "Submit"}
               </button>
               {editCommentId && (
                 <button

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { toast } from 'react-toastify';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { toast } from "react-toastify";
+import { fetchWithCache } from "../utils/apiFetcher";
 
 interface Category {
   id: number;
@@ -15,41 +16,43 @@ const EditArticle: React.FC = () => {
   const [article, setArticle] = useState<any>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [content, setContent] = useState("");
   const [thumbnail, setThumbnail] = useState<File | null>(null);
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/categories');
-        if (!response.ok) {
-          console.error('Failed to fetch categories:', response.statusText);
-          return;
-        }
-        const data = await response.json();
+        const data = await fetchWithCache(
+          "http://localhost:3000/api/categories"
+        );
+        // if (!response.ok) {
+        //   console.error("Failed to fetch categories:", response.statusText);
+        //   return;
+        // }
+        // const data = await response.json();
         setCategories(data);
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error("Error fetching categories:", error);
       }
     };
 
     const fetchArticle = async () => {
       try {
-        const response = await fetch(
+        const data = await fetchWithCache(
           `http://localhost:3000/api/articles/${id}`
         );
-        if (!response.ok) {
-          console.error('Failed to fetch article:', response.statusText);
-          return;
-        }
-        const data = await response.json();
+        // if (!response.ok) {
+        //   console.error('Failed to fetch article:', response.statusText);
+        //   return;
+        // }
+        // const data = await response.json();
         setArticle(data.article); // Access the article directly from the response
-        setTitle(data.article.title || '');
-        setDescription(data.article.description || '');
-        setContent(data.article.content || '');
+        setTitle(data.article.title || "");
+        setDescription(data.article.description || "");
+        setContent(data.article.content || "");
 
         // Extracting category IDs from the article's categories
         const categoryIds = data.article.categories.map(
@@ -57,7 +60,7 @@ const EditArticle: React.FC = () => {
         );
         setSelectedCategories(categoryIds); // Setting selected categories
       } catch (error) {
-        console.error('Error fetching article:', error);
+        console.error("Error fetching article:", error);
       }
     };
 
@@ -76,26 +79,26 @@ const EditArticle: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast.error('You must be logged in to edit an article.');
+      toast.error("You must be logged in to edit an article.");
       return;
     }
 
     const formData = new FormData();
-    if (title) formData.append('title', title);
-    if (description) formData.append('description', description);
-    if (content) formData.append('content', content);
+    if (title) formData.append("title", title);
+    if (description) formData.append("description", description);
+    if (content) formData.append("content", content);
     if (selectedCategories.length > 0) {
       selectedCategories.forEach((categoryId) => {
-        formData.append('categoryIds[]', String(categoryId)); // Append each categoryId individually
+        formData.append("categoryIds[]", String(categoryId)); // Append each categoryId individually
       });
     }
     if (thumbnail) {
-      formData.append('thumbnail', thumbnail);
+      formData.append("thumbnail", thumbnail);
     }
 
     try {
       const response = await fetch(`http://localhost:3000/api/articles/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -104,15 +107,15 @@ const EditArticle: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Update failed:', errorData);
-        throw new Error('Failed to update article');
+        console.error("Update failed:", errorData);
+        throw new Error("Failed to update article");
       }
 
-      toast.success('Article updated successfully!');
+      toast.success("Article updated successfully!");
       navigate(`/articles/${id}`);
     } catch (error) {
-      console.error('Error updating article:', error);
-      toast.error('Failed to update article.');
+      console.error("Error updating article:", error);
+      toast.error("Failed to update article.");
     }
   };
 
@@ -178,8 +181,8 @@ const EditArticle: React.FC = () => {
                   className={`inline-block cursor-pointer px-3 py-1 rounded-sm border border-gray-300
                     ${
                       selectedCategories.includes(category.id)
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-700'
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700"
                     }`}
                 >
                   {category.name}

@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import ArticleCard from './ArtilceCard'; // Ensure correct import path
+import React, { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
+import ArticleCard from "./ArtilceCard"; // Ensure correct import path
+import { fetchWithCache } from "../utils/apiFetcher";
 
 interface Article {
   id: string;
@@ -13,13 +14,13 @@ interface Article {
   };
 }
 
-interface CategoryArticlesResponse {
-  category: string;
-  total: number;
-  pages: number;
-  currentPage: number;
-  articles: Article[];
-}
+// interface CategoryArticlesResponse {
+//   category: string;
+//   total: number;
+//   pages: number;
+//   currentPage: number;
+//   articles: Article[];
+// }
 
 interface CategoriesProps {
   searchQuery: string;
@@ -29,8 +30,8 @@ const Categories: React.FC<CategoriesProps> = ({ searchQuery }) => {
   const { id } = useParams<{ id: string }>();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [categoryName, setCategoryName] = useState<string>('');
+  const [error, setError] = useState("");
+  const [categoryName, setCategoryName] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const observer = useRef<IntersectionObserver | null>(null);
@@ -47,26 +48,26 @@ const Categories: React.FC<CategoriesProps> = ({ searchQuery }) => {
       setLoading(true);
       try {
         const limit = 10;
-        const response = await fetch(
+        const data = await fetchWithCache(
           `http://localhost:3000/api/categories/${id}?page=${page}&limit=${limit}&search=${encodeURIComponent(
-            searchQuery || ''
+            searchQuery || ""
           )}`
         );
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch articles');
-        }
+        // if (!response.ok) {
+        //   throw new Error('Failed to fetch articles');
+        // }
 
-        const data: CategoryArticlesResponse = await response.json();
-        console.log('Fetched data:', data);
+        // const data: CategoryArticlesResponse = await response.json();
+        // console.log('Fetched data:', data);
 
         // Update articles and pagination info
         setArticles((prev) => [...prev, ...data.articles]);
-        setCategoryName(data.category || '');
+        setCategoryName(data.category || "");
         setHasMore(data.currentPage < data.pages); // Check if there are more pages
       } catch (error: any) {
-        console.error('Error fetching articles:', error);
-        setError('Error fetching articles');
+        console.error("Error fetching articles:", error);
+        setError("Error fetching articles");
       } finally {
         setLoading(false);
       }
@@ -104,7 +105,7 @@ const Categories: React.FC<CategoriesProps> = ({ searchQuery }) => {
     <div className="p-8">
       {!searchQuery && (
         <h1 className="text-2xl font-bold text-center mb-4">
-          {capitalizeFirstLetter(categoryName) || 'Articles'}
+          {capitalizeFirstLetter(categoryName) || "Articles"}
         </h1>
       )}
 

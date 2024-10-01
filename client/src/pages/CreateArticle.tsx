@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import { fetchWithCache } from '../utils/apiFetcher';
 
 interface Category {
   id: number;
@@ -23,8 +24,8 @@ const CreateArticleForm: React.FC = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/categories');
-        const data = await response.json();
+        const data = await fetchWithCache('http://localhost:3000/api/categories');
+        // const data = await response.json();
         setCategories(data);
       } catch (error) {
         console.error('Error fetching categories:', error);

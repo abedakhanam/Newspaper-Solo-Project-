@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { fetchWithCache } from '../utils/apiFetcher';
 
 // Debounce function
 function useDebounce(value: string, delay: number) {
@@ -54,11 +55,11 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/categories');
-        if (!response.ok) {
-          throw new Error('Failed to fetch categories');
-        }
-        const data = await response.json();
+        const data = await fetchWithCache('http://localhost:3000/api/categories');
+        // if (!response.ok) {
+        //   throw new Error('Failed to fetch categories');
+        // }
+        // const data = await response.json();
         setCategories(data);
       } catch (error) {
         setError('Error fetching categories');

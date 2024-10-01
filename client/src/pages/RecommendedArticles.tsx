@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
-import ArticleCard from '../components/ArtilceCard';
-import { io } from 'socket.io-client';
+import React, { useEffect, useState, useRef } from "react";
+import ArticleCard from "../components/ArtilceCard";
+import { io } from "socket.io-client";
+import { fetchWithCache } from "../utils/apiFetcher";
 
 interface Author {
   username: string;
@@ -50,23 +51,23 @@ const RecommendedArticles: React.FC<HomeProps> = ({ searchQuery }) => {
 
   // Initialize WebSocket for real-time updates
   useEffect(() => {
-    socketRef.current = io('http://localhost:3000');
+    socketRef.current = io("http://localhost:3000");
 
-    socketRef.current.on('connect_error', (err: any) => {
-      console.error('Socket connection error:', err);
+    socketRef.current.on("connect_error", (err: any) => {
+      console.error("Socket connection error:", err);
     });
 
-    socketRef.current.on('reconnect_attempt', () => {
-      console.log('Trying to reconnect to the server...');
+    socketRef.current.on("reconnect_attempt", () => {
+      console.log("Trying to reconnect to the server...");
     });
 
     // Refresh on update
-    socketRef.current.on('articleUpdated', async () => {
+    socketRef.current.on("articleUpdated", async () => {
       setPage(1);
     });
 
     // Remove deleted article from the list
-    socketRef.current.on('articleDeleted', (deletedId: any) => {
+    socketRef.current.on("articleDeleted", (deletedId: any) => {
       setRecommendedArticles((prevArticles) =>
         prevArticles.filter((article) => article.id !== deletedId)
       );
@@ -88,17 +89,17 @@ const RecommendedArticles: React.FC<HomeProps> = ({ searchQuery }) => {
       setError(null);
 
       try {
-        const response = await fetch(
+        const data = await fetchWithCache(
           `http://localhost:3000/api/visitor-activity/recommendations?page=${page}&limit=10&search=${encodeURIComponent(
             debouncedSearchQuery
           )}`
         );
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch articles. Server error.');
-        }
+        // if (!response.ok) {
+        //   throw new Error('Failed to fetch articles. Server error.');
+        // }
 
-        const data = await response.json();
+        // const data = await response.json();
 
         // Check if no more articles to load
         if (data.recommendedArticles.length === 0) {
@@ -115,9 +116,9 @@ const RecommendedArticles: React.FC<HomeProps> = ({ searchQuery }) => {
 
         setTotalPages(data.totalPages); // Ensure totalPages is received correctly
       } catch (error: any) {
-        console.error('Error fetching articles:', error);
+        console.error("Error fetching articles:", error);
         setError(
-          error.message || 'Failed to load articles. Please try again later.'
+          error.message || "Failed to load articles. Please try again later."
         );
       } finally {
         setLoading(false);
@@ -141,7 +142,7 @@ const RecommendedArticles: React.FC<HomeProps> = ({ searchQuery }) => {
 
     observer.current = new IntersectionObserver(callback, {
       root: null,
-      rootMargin: '100px',
+      rootMargin: "100px",
       threshold: 0.1,
     });
 
@@ -202,8 +203,8 @@ const RecommendedArticles: React.FC<HomeProps> = ({ searchQuery }) => {
               key={article.id}
               className={`bg-white rounded-sm shadow-sm overflow-hidden transition-transform transform hover:scale-105 ${
                 index === 0
-                  ? 'col-span-2 sm:col-span-2 lg:col-span-2 xl:col-span-3'
-                  : 'col-span-1'
+                  ? "col-span-2 sm:col-span-2 lg:col-span-2 xl:col-span-3"
+                  : "col-span-1"
               }`}
             >
               <ArticleCard article={article} />

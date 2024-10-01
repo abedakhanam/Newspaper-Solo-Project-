@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
-import ArticleCard from '../components/ArtilceCard';
-import { io } from 'socket.io-client';
+import React, { useEffect, useState, useRef } from "react";
+import ArticleCard from "../components/ArtilceCard";
+import { io } from "socket.io-client";
+import { fetchWithCache } from "../utils/apiFetcher";
 
 interface Author {
   username: string;
@@ -46,6 +47,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
   const lastArticleRef = useRef<HTMLDivElement | null>(null);
   const socketRef = useRef<any>(null);
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const [totalPages, setTotalPages] = useState<number>(1); //for keeping total page value
 
   // Fetch articles and all articles
   useEffect(() => {
@@ -54,15 +56,18 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
       setError(null);
 
       try {
-        const response = await fetch(
+        const data = await fetchWithCache(
           `http://localhost:3000/api/articles?page=${page}&limit=10`
         );
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch articles. Server error.');
-        }
+        // console.log(data.pages);
+        setTotalPages(data.pages);
 
-        const data = await response.json();
+        // if (!response.ok) {
+        //   throw new Error('Failed to fetch articles. Server error.');
+        // }
+
+        // const data = await response.json();
         setArticles((prevArticles) =>
           page === 1 ? data.articles : [...prevArticles, ...data.articles]
         );
@@ -70,9 +75,9 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
           page === 1 ? data.articles : [...prevArticles, ...data.articles]
         ); // Set all articles
       } catch (error: any) {
-        console.error('Error fetching articles:', error);
+        console.error("Error fetching articles:", error);
         setError(
-          error.message || 'Failed to load articles. Please try again later.'
+          error.message || "Failed to load articles. Please try again later."
         );
       } finally {
         setLoading(false);
@@ -106,7 +111,8 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
     if (observer.current) observer.current.disconnect();
 
     const callback = (entries: IntersectionObserverEntry[]) => {
-      if (entries[0].isIntersecting) {
+      //added this totalPages > page
+      if (entries[0].isIntersecting && totalPages > page) {
         setPage((prevPage) => prevPage + 1); // Load the next page when scrolled to the bottom
       }
     };
@@ -165,8 +171,8 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
               key={article.id}
               className={`bg-neutral  overflow-hidden transition-transform transform hover:scale-105 ${
                 index === 0
-                  ? 'col-span-2 sm:col-span-2 lg:col-span-2 xl:col-span-3'
-                  : 'col-span-1'
+                  ? "col-span-2 sm:col-span-2 lg:col-span-2 xl:col-span-3"
+                  : "col-span-1"
               }`}
             >
               <ArticleCard article={article} />
