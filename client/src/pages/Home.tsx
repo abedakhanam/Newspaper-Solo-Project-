@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import ArticleCard from "../components/ArtilceCard";
-import { io } from "socket.io-client";
+// import { io } from "socket.io-client";
 import { fetchWithCache } from "../utils/apiFetcher";
 
 interface Author {
@@ -45,7 +45,7 @@ const Home: React.FC<HomeProps> = ({ searchQuery }) => {
   const [page, setPage] = useState(1);
   const observer = useRef<IntersectionObserver | null>(null);
   const lastArticleRef = useRef<HTMLDivElement | null>(null);
-  const socketRef = useRef<any>(null);
+  // const socketRef = useRef<any>(null);
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [totalPages, setTotalPages] = useState<number>(1); //for keeping total page value
 

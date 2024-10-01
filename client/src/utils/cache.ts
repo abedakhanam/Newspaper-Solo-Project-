@@ -26,4 +26,8 @@ function getCache(key: string) {
   return cachedItem.data;
 }
 
-export { getCache, setCache };
+function clearCache() {
+  cache = {};
+}
+
+export { getCache, setCache, clearCache };
