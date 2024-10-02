@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { capitalizeWords } from "../utils/sharedFunctions";
+import { capitalizeWords, formatDateString } from "../utils/sharedFunctions";
 
 interface ArticleCardProps {
   article: {
@@ -59,13 +59,13 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         </p>
       </div>
 
-      <div className="p-4 flex justify-between items-center border-t">
+      <div className="p-1 flex justify-between items-center border-t">
         <p className="text-sm text-gray-500">
-          {new Date(article.createdAt).toLocaleDateString() || "Unknown date"}
+          {formatDateString(article.createdAt) || "Unknown date"}
         </p>
       </div>
     </div>
   );
 };
-
+//new Date(article.createdAt).toLocaleDateString()
 export default ArticleCard;

@@ -5,7 +5,7 @@ import Navbar from "./components/Navbar";
 import AuthForm from "./pages/AuthFrom"; // Fixed the import typo
 import { AuthProvider } from "./contexts/AuthContext";
 import CreateArticle from "./pages/CreateArticle";
-import ArticleDetails from "./pages/ArticleDetailes"; // Fixed the import typo
+import ArticleDetails from "./pages/ArticleDetails"; // Fixed the import typo
 import Categories from "./components/Categories";
 import MyArticles from "./pages/MyArticles";
 import EditArticle from "./components/EditArticle";

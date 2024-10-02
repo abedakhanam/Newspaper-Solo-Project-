@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
-import ArticleCard from '../components/ArtilceCard'; // Fixed the import typo
-import { io } from 'socket.io-client'; // Import Socket.io client
+import React, { useEffect, useState, useRef } from "react";
+import ArticleCard from "../components/ArticleCard"; // Fixed the import typo
+import { io } from "socket.io-client"; // Import Socket.io client
 
 interface Author {
   username: string;
@@ -49,21 +49,21 @@ const MyArticles: React.FC<MyArticlesProps> = ({ searchQuery }) => {
   const debouncedSearchQuery = useDebounce(searchQuery, 500); // 500 ms debounce
 
   useEffect(() => {
-    socketRef.current = io('http://localhost:3000');
+    socketRef.current = io("http://localhost:3000");
 
-    socketRef.current.on('connect_error', (err: any) => {
-      console.error('Socket connection error:', err);
+    socketRef.current.on("connect_error", (err: any) => {
+      console.error("Socket connection error:", err);
     });
 
-    socketRef.current.on('reconnect_attempt', () => {
-      console.log('Trying to reconnect to the server...');
+    socketRef.current.on("reconnect_attempt", () => {
+      console.log("Trying to reconnect to the server...");
     });
 
-    socketRef.current.on('articleUpdated', async () => {
+    socketRef.current.on("articleUpdated", async () => {
       setPage(1);
     });
 
-    socketRef.current.on('articleDeleted', (deletedId: any) => {
+    socketRef.current.on("articleDeleted", (deletedId: any) => {
       setArticles((prevArticles) =>
         prevArticles.filter((article) => article.id !== deletedId)
       );
@@ -82,9 +82,9 @@ const MyArticles: React.FC<MyArticlesProps> = ({ searchQuery }) => {
       setError(null); // Clear previous errors
 
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          setError('You must be logged in to view your articles.');
+          setError("You must be logged in to view your articles.");
           return;
         }
 
@@ -100,7 +100,7 @@ const MyArticles: React.FC<MyArticlesProps> = ({ searchQuery }) => {
         );
 
         if (!response.ok) {
-          throw new Error('Failed to fetch articles. Server error.');
+          throw new Error("Failed to fetch articles. Server error.");
         }
 
         const data = await response.json();
@@ -108,9 +108,9 @@ const MyArticles: React.FC<MyArticlesProps> = ({ searchQuery }) => {
           page === 1 ? data.articles : [...prevArticles, ...data.articles]
         );
       } catch (error: any) {
-        console.error('Error fetching articles:', error);
+        console.error("Error fetching articles:", error);
         setError(
-          error.message || 'Failed to load articles. Please try again later.'
+          error.message || "Failed to load articles. Please try again later."
         );
       } finally {
         setLoading(false);
@@ -184,8 +184,8 @@ const MyArticles: React.FC<MyArticlesProps> = ({ searchQuery }) => {
               key={article.id}
               className={`bg-white rounded-sm shadow-sm overflow-hidden transition-transform transform hover:scale-105 ${
                 index === 0
-                  ? 'col-span-2 sm:col-span-2 lg:col-span-2 xl:col-span-3'
-                  : 'col-span-1'
+                  ? "col-span-2 sm:col-span-2 lg:col-span-2 xl:col-span-3"
+                  : "col-span-1"
               }`}
             >
               <ArticleCard article={article} />

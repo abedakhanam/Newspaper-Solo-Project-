@@ -181,7 +181,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
             to="/"
             className="-m-1.5 p-1.5 flex justify-center items-center"
           >
-            <span className="text-4xl font-bold text-black-600">
+            <span className="text-5xl font-bold text-black-600">
               Project Code Times
             </span>
           </Link>
@@ -194,7 +194,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                 </span>
                 <button
                   onClick={logout}
-                  className="ml-2 text-sm font-semibold leading-6 text-white p-1 bg-red-500 hover:bg-red-700 rounded-sm"
+                  className="ml-2 text-sm font-semibold leading-6 text-red-500 p-1  hover:text-white hover:bg-red-500 border border-red-100 rounded-lg"
                 >
                   Logout
                 </button>

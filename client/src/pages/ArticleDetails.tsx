@@ -5,6 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import ConfirmModal from "../components/ConfirmModal";
 // import { io } from 'socket.io-client';
 import { fetchWithCache } from "../utils/apiFetcher";
+import { capitalizeWords, formatDateString } from "../utils/sharedFunctions";
 interface User {
   id: number; // or string, depending on your implementation
   username: string;
@@ -205,18 +206,23 @@ const ArticleDetails: React.FC = () => {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to delete article");
+      } else {
+        toast.success("Article deleted successfully!");
+        setTimeout(() => {
+          navigate("/"); // Navigate to home page
+        }, 1000);
       }
 
       // Emit socket event to notify about article deletion
-      socket.current.emit("articleDeleted", id);
+      // socket.current.emit("articleDeleted", id);
 
       // Show success toast
-      toast.success("Article deleted successfully!");
+      // toast.success("Article deleted successfully!");
 
       // Delay navigation to allow toast to be visible
-      setTimeout(() => {
-        navigate("/"); // Navigate to home page
-      }, 2000); // 2000 ms = 2 seconds
+      // setTimeout(() => {
+      //   navigate("/"); // Navigate to home page
+      // }, 2000); // 2000 ms = 2 seconds
     } catch (error: any) {
       console.error("Error deleting article:", error);
       setError(error.message || "Failed to delete article.");
@@ -244,7 +250,7 @@ const ArticleDetails: React.FC = () => {
   const isAuthor = user && user.username === article.author.username;
   const capitalizeFirstLetter = (username: any) => {
     if (!username) return "";
-    return username.charAt(0).toUpperCase() + username.slice(1).toLowerCase();
+    return capitalizeWords(username);
   };
   return (
     <div className="flex flex-col lg:flex-row p-4 max-w-screen-xl mx-auto">
@@ -259,7 +265,7 @@ const ArticleDetails: React.FC = () => {
 
         <h2 className="text-xl font-bold text-gray-800 mb-1">Published On</h2>
         <p className="text-gray-600 italic mb-4">
-          {new Date(article.createdAt).toLocaleDateString()}
+          {formatDateString(article.createdAt)}
         </p>
 
         <h2 className="text-xl font-bold text-gray-800 mb-1">Views</h2>
@@ -328,7 +334,7 @@ const ArticleDetails: React.FC = () => {
                   <strong>{comment.User.username}:</strong> {comment.content}
                 </p>
                 <small className="text-gray-500">
-                  {new Date(comment.createdAt).toLocaleString()}
+                  {formatDateString(comment.createdAt)}
                 </small>
                 {user && user.username === comment.User.username && (
                   <div className="flex space-x-2 mt-1">

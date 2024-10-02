@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
-import ArticleCard from "./ArtilceCard"; // Ensure correct import path
+import ArticleCard from "./ArticleCard"; // Ensure correct import path
 import { fetchWithCache } from "../utils/apiFetcher";
 
 interface Article {

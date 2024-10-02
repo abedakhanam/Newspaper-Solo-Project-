@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import ArticleCard from "../components/ArtilceCard";
+import ArticleCard from "../components/ArticleCard";
 import { io } from "socket.io-client";
 import { fetchWithCache } from "../utils/apiFetcher";
 
