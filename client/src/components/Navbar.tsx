@@ -1,19 +1,19 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   Popover,
   PopoverButton,
   PopoverGroup,
   PopoverPanel,
-} from '@headlessui/react';
+} from "@headlessui/react";
 import {
   Bars3Icon,
   ChevronDownIcon,
   MagnifyingGlassIcon,
-} from '@heroicons/react/24/outline';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { fetchWithCache } from '../utils/apiFetcher';
+} from "@heroicons/react/24/outline";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { fetchWithCache } from "../utils/apiFetcher";
 
 // Debounce function
 function useDebounce(value: string, delay: number) {
@@ -36,7 +36,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
   const { user, logout } = useAuth();
   // const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -55,15 +55,17 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const data = await fetchWithCache('http://localhost:3000/api/categories');
+        const data = await fetchWithCache(
+          "http://localhost:3000/api/categories"
+        );
         // if (!response.ok) {
         //   throw new Error('Failed to fetch categories');
         // }
         // const data = await response.json();
         setCategories(data);
       } catch (error) {
-        setError('Error fetching categories');
-        console.error('Fetch categories error:', error);
+        setError("Error fetching categories");
+        console.error("Fetch categories error:", error);
       }
     };
 
@@ -83,12 +85,12 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
           `http://localhost:3000/api/articles?search=${debouncedSearchQuery}`
         );
         if (!response.ok) {
-          throw new Error('Failed to fetch articles');
+          throw new Error("Failed to fetch articles");
         }
         const data = await response.json();
         setSuggestions(data.articles);
       } catch (error) {
-        console.error('Fetch suggestions error:', error);
+        console.error("Fetch suggestions error:", error);
       }
     };
 
@@ -113,9 +115,9 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -123,7 +125,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
   const moreCategories = categories.slice(5);
 
   const getActiveCategoryId = () => {
-    const categoryPath = location.pathname.split('/')[2];
+    const categoryPath = location.pathname.split("/")[2];
     return categoryPath ? parseInt(categoryPath, 10) : null;
   };
 
@@ -179,7 +181,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
             to="/"
             className="-m-1.5 p-1.5 flex justify-center items-center"
           >
-            <span className="text-2xl font-bold text-blue-600">
+            <span className="text-4xl font-bold text-black-600">
               Project Code Times
             </span>
           </Link>
@@ -188,7 +190,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
             {user ? (
               <div className="flex items-center">
                 <span className="text-sm font-semibold leading-6 text-gray-900 p-1">
-                  {user.username.toUpperCase()}
+                  Hi, {user.username[0].toUpperCase() + user.username.slice(1)}
                 </span>
                 <button
                   onClick={logout}
@@ -216,8 +218,8 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                 to={`/categories/${category.id}`}
                 className={`text-sm font-semibold leading-6 p-1 rounded-md ${
                   activeCategoryId === category.id
-                    ? 'bg-gray-200 shadow-md'
-                    : 'hover:bg-gray-100'
+                    ? "bg-gray-200 shadow-md"
+                    : "hover:bg-gray-100"
                 }`}
               >
                 <span className="truncate w-24">
@@ -238,7 +240,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                   <span className="truncate w-24">
                     {selectedCategory
                       ? capitalizeFirstLetter(selectedCategory.name)
-                      : 'More'}
+                      : "More"}
                   </span>
                   <ChevronDownIcon
                     aria-hidden="true"
@@ -255,8 +257,8 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
                         className={`block w-full text-left px-4 py-2 text-sm text-gray-700 rounded-md hover:bg-gray-100 ${
                           selectedCategory &&
                           selectedCategory.id === category.id
-                            ? 'bg-gray-200'
-                            : ''
+                            ? "bg-gray-200"
+                            : ""
                         }`}
                       >
                         <span className="truncate">
