@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const AuthForm: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
+    username: "",
+    email: "",
+    password: "",
   });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams(); //added later
+  const currentUrl = searchParams.get("currentUrl"); //added later
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -25,14 +27,14 @@ const AuthForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const url = isLogin
-      ? 'http://localhost:3000/api/login'
-      : 'http://localhost:3000/api/register';
+      ? "http://localhost:3000/api/login"
+      : "http://localhost:3000/api/register";
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
@@ -42,16 +44,30 @@ const AuthForm: React.FC = () => {
         if (isLogin) {
           login({ id: data.id, username: formData.username }, data.token);
         }
-        setSuccess(isLogin ? 'Login successful!' : 'Registration successful!');
-        setError('');
-        navigate('/'); // Redirect to home page after login
+        setSuccess(isLogin ? "Login successful!" : "Registration successful!");
+        setError("");
+        // console.log(`currenUrl : ${currentUrl}`);
+        if (currentUrl) {
+          //added later
+          navigate(`${currentUrl}`);
+        } else if (!isLogin) {
+          setIsLogin(!isLogin);
+          setFormData({
+            username: "",
+            email: "",
+            password: "",
+          });
+          navigate("/auth");
+        } else {
+          navigate("/"); // Redirect to home page after login
+        }
       } else {
-        setError(data.error || 'An error occurred');
-        setSuccess('');
+        setError(data.error || "An error occurred");
+        setSuccess("");
       }
     } catch {
-      setError('An error occurred');
-      setSuccess('');
+      setError("An error occurred");
+      setSuccess("");
     }
   };
 
@@ -59,7 +75,7 @@ const AuthForm: React.FC = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-400 p-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
-          {isLogin ? 'Welcome Back!' : 'Create an Account'}
+          {isLogin ? "Welcome Back!" : "Create an Account"}
         </h2>
         {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
         {success && (
@@ -120,7 +136,7 @@ const AuthForm: React.FC = () => {
             type="submit"
             className="bg-blue-600 text-white py-3 px-6 rounded-full hover:bg-blue-700 transition duration-300 w-full"
           >
-            {isLogin ? 'Login' : 'Register'}
+            {isLogin ? "Login" : "Register"}
           </button>
         </form>
 
@@ -129,8 +145,8 @@ const AuthForm: React.FC = () => {
           className="mt-4 text-blue-600 hover:underline w-full text-center"
         >
           {isLogin
-            ? 'Need an account? Register here'
-            : 'Already have an account? Login'}
+            ? "Need an account? Register here"
+            : "Already have an account? Login"}
         </button>
       </div>
     </div>

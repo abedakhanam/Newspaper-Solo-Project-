@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import ConfirmModal from "../components/ConfirmModal";
 // import { io } from 'socket.io-client';
 import { fetchWithCache } from "../utils/apiFetcher";
@@ -53,6 +53,8 @@ interface RelatedArticle {
 
 const ArticleDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
+  const currentUrl = location.pathname;
   const { user } = useAuth() as { user: User | null };
   const [article, setArticle] = useState<Article | null>(null);
   const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
@@ -99,7 +101,9 @@ const ArticleDetails: React.FC = () => {
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      setError("You must be logged in to comment.");
+      toast.error("You must be logged in to comment.");
+      // console.log(`currentUrl : ${currentUrl}`);
+      navigate("/auth?currentUrl=" + currentUrl);
       return;
     }
 
@@ -244,6 +248,7 @@ const ArticleDetails: React.FC = () => {
   };
   return (
     <div className="flex flex-col lg:flex-row p-4 max-w-screen-xl mx-auto">
+      <ToastContainer autoClose={1000} />
       <div className="lg:w-1/4 p-6 bg-neutral-200 rounded-lg shadow-lg">
         <h2 className="text-xl font-bold text-gray-800 mb-1">Author</h2>
         <p className="text-gray-600 text-sm mb-4">

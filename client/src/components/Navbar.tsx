@@ -34,7 +34,7 @@ function useDebounce(value: string, delay: number) {
 
 const Navbar = ({ searchQuery, setSearchQuery }) => {
   const { user, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
   const [suggestions, setSuggestions] = useState([]);
