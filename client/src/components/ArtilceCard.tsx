@@ -1,5 +1,6 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { capitalizeWords } from "../utils/sharedFunctions";
 
 interface ArticleCardProps {
   article: {
@@ -23,11 +24,11 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   };
 
   const getImageUrl = (url: string) => {
-    return url.startsWith('http') ? url : `http://localhost:3000${url}`;
+    return url.startsWith("http") ? url : `http://localhost:3000${url}`;
   };
 
   const capitalizeFirstLetter = (username: string) => {
-    if (!username) return '';
+    if (!username) return "";
     return username.charAt(0).toUpperCase() + username.slice(1);
   };
 
@@ -39,16 +40,18 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
       <div className="card-image">
         <img
           className="w-full h-48 object-cover"
-          src={getImageUrl(article.thumbnailUrl || '')}
-          alt={article.title || 'Article Image'} // Default alt text
+          src={getImageUrl(article.thumbnailUrl || "")}
+          alt={article.title || "Article Image"} // Default alt text
           title={article.title}
         />
       </div>
 
       <div className="p-4 flex flex-col flex-grow">
-        <h2 className="text-l font-bold mb-2">{article.title}</h2>
+        <h2 className="text-2xl font-bold mb-2">
+          {capitalizeWords(article.title)}
+        </h2>
         <p className="text-gray-600 mb-2 flex-grow overflow-hidden text-ellipsis line-clamp-3">
-          {article.description || 'No description available.'}{' '}
+          {article.description || "No description available."}{" "}
           {/* Default description */}
         </p>
         <p className="text-sm text-gray-500 mt-2">
@@ -58,7 +61,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
 
       <div className="p-4 flex justify-between items-center border-t">
         <p className="text-sm text-gray-500">
-          {new Date(article.createdAt).toLocaleDateString() || 'Unknown date'}
+          {new Date(article.createdAt).toLocaleDateString() || "Unknown date"}
         </p>
       </div>
     </div>

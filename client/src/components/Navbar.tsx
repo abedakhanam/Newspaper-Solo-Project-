@@ -216,7 +216,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
               <Link
                 key={category.id}
                 to={`/categories/${category.id}`}
-                className={`text-sm font-semibold leading-6 p-1 rounded-md ${
+                className={`text-base font-semibold leading-6 p-1 rounded-md ${
                   activeCategoryId === category.id
                     ? "bg-gray-200 shadow-md"
                     : "hover:bg-gray-100"
