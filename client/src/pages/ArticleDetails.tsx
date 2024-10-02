@@ -68,7 +68,7 @@ const ArticleDetails: React.FC = () => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const commentRef = useRef<HTMLTextAreaElement>(null);
-  const socket = useRef<any>(null);
+  // const socket = useRef<any>(null);
   const fetchArticle = async () => {
     setLoading(true);
     try {
@@ -105,6 +105,11 @@ const ArticleDetails: React.FC = () => {
       toast.error("You must be logged in to comment.");
       // console.log(`currentUrl : ${currentUrl}`);
       navigate("/auth?currentUrl=" + currentUrl);
+      return;
+    }
+
+    if (comment == "") {
+      toast.error("Cannot submit empty comment");
       return;
     }
 
