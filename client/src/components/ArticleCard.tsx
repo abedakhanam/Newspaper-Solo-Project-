@@ -19,7 +19,7 @@ const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    console.log(`Navigating to article with ID: ${article.id}`);
+    // console.log(`Navigating to article with ID: ${article.id}`);
     navigate(`/articles/${article.id}`);
   };
 

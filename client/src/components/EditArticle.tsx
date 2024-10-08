@@ -131,6 +131,7 @@ const EditArticle: React.FC = () => {
           <label className="block mb-2">Title</label>
           <input
             type="text"
+            id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-sm"
@@ -140,6 +141,7 @@ const EditArticle: React.FC = () => {
           <label className="block mb-2">Description</label>
           <input
             type="text"
+            id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-sm"
@@ -149,6 +151,7 @@ const EditArticle: React.FC = () => {
           <label className="block mb-2">Content</label>
           <textarea
             value={content}
+            id="content"
             onChange={(e) => setContent(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-sm"
             rows={5}
@@ -173,6 +176,7 @@ const EditArticle: React.FC = () => {
               <label key={category.id} className="flex items-center">
                 <input
                   type="checkbox"
+                  id="checkbox"
                   checked={selectedCategories.includes(category.id)}
                   onChange={() => handleCategoryChange(category.id)}
                   className="hidden"
