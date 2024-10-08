@@ -20,5 +20,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "auth.spec.js", "integration.spec.js"]
+  "include": ["src", "integration/auth.spec.js", "integration/integration.spec.js"]
 }
