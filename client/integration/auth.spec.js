@@ -30,12 +30,12 @@ async function runTests() {
         )
         .click();
 
-      // Generate random user data
+      //random user data
       const username = `TestUser${generateRandomString(5)}`;
       const email = `testuser_${generateRandomString(5)}@example.com`;
       const password = generateRandomString(10);
 
-      // Fill out the registration form
+      //registration form
       await driver.wait(until.elementLocated(By.id("username")), 10000);
 
       await driver
@@ -59,25 +59,23 @@ async function runTests() {
 
       await driver.findElement(By.id("password")).sendKeys(password);
 
-      // Submit the form
+      //Submit
       await driver
         .findElement(By.xpath("//button[contains(text(), 'Register')]"))
         .click();
 
-      // Wait for success message
       await driver.wait(until.elementLocated(By.css(".text-green-500")), 10000);
       const successMessage = await driver
         .findElement(By.css(".text-green-500"))
         .getText();
 
       await delay(500);
-      console.log(successMessage); // Should log: "Registration successful!"
+      console.log(successMessage);
       console.log("Registration test passed");
 
       return { username, email, password };
     }
 
-    // Run the tests
     const { username, password } = await testRegistration();
     await driver.sleep(2000);
     await testLogin(username, password, driver, baseUrl);

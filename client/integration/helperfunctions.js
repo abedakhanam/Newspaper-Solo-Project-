@@ -6,6 +6,11 @@ export function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export async function scrollIntoView(element, driver) {
+  await driver.executeScript("arguments[0].scrollIntoView(true);", element);
+  await delay(500); // Small delay after scrolling
+}
+
 export async function testLogin(username, password, driver, baseUrl) {
   await driver.get(`${baseUrl}/auth`);
 
