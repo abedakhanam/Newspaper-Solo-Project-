@@ -1,0 +1,43 @@
+# Django-specific
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+staticfiles/
+
+# Virtual Environment
+env/
+myenv/
+venv/
+ENV/
+.venv/
+.env
+
+# Python-related
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+.eggs/
+*.pyo
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Pytest cache
+.pytest_cache/
+
+# Byte-compiled / optimized / DLL files
+*.pyd
+
+# Migrations
+*/migrations/*
+
+# VSCode / JetBrains / IDE settings
+.vscode/
+.idea/
+
+# MySQL / PostgreSQL dumps
+*.sql
