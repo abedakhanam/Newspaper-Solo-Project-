@@ -6,11 +6,6 @@ export function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function scrollIntoView(element, driver) {
-  await driver.executeScript("arguments[0].scrollIntoView(true);", element);
-  await delay(500); // Small delay after scrolling
-}
-
 export async function testLogin(username, password, driver, baseUrl) {
   await driver.get(`${baseUrl}/auth`);
 
@@ -70,38 +65,8 @@ export async function testLogout(driver, baseUrl) {
   console.log("Logout test passed");
 }
 
-// export async function testLogin(username, password) {
-//   await driver.get(`${baseUrl}/auth`);
-
-//   // Test login with empty fields to check required validation
-//   let usernameInput = await driver.findElement(By.id("username"), 10000);
-//   let passwordInput = await driver.findElement(By.id("password"), 10000);
-
-//   // Fill out the login form with provided credentials
-//   await usernameInput.sendKeys(username);
-//   await passwordInput.sendKeys(password);
-
-//   // Submit the form
-//   await driver
-//     .findElement(By.xpath("//button[contains(text(), 'Login')]"))
-//     .click();
-
-//   try {
-//     // Wait for either successful login (redirect to home) or error message
-//     await driver.wait(until.urlIs(`${baseUrl}/`), 5000); // If login is successful, redirect happens
-//     console.log("Login test passed");
-//   } catch (error) {
-//     // If the login fails, the URL won't change and we need to check for the error message
-//     console.log("Login failed, checking for error message");
-
-//     // Wait for the error message to be displayed on the screen
-//     const errorMessageElement = await driver.wait(
-//       until.elementLocated(By.css("p.text-red-500.mb-4.text-center")),
-//       5000
-//     );
-//     const errorMessageText = await errorMessageElement.getText();
-
-//     // Log the error message (should log: "Invalid credentials")
-//     console.log(`Error message displayed: ${errorMessageText}`);
-//   }
-// }
+//will do later
+export async function scrollIntoView(element, driver) {
+  await driver.executeScript("arguments[0].scrollIntoView(true);", element);
+  await delay(500); // Small delay after scrolling
+}

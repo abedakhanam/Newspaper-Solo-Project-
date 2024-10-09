@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import {
-  Dialog,
+  // Dialog,
   Popover,
   PopoverButton,
   PopoverGroup,
@@ -131,7 +131,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
 
   const activeCategoryId = getActiveCategoryId();
 
-  const handleCategorySelect = (category) => {
+  const handleCategorySelect = (category: any) => {
     setSelectedCategory(category);
     setDropdownOpen(false); // Close dropdown before navigation
     navigate(`/categories/${category.id}`); // Navigate to the selected category
@@ -143,7 +143,7 @@ const Navbar = ({ searchQuery, setSearchQuery }) => {
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center">
             <Popover className="relative">
-              <PopoverButton className="flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900 p-1 rounded-md hover:bg-gray-100">
+              <PopoverButton className="popoverbutton flex items-center gap-x-1 text-sm font-semibold leading-6 text-gray-900 p-1 rounded-md hover:bg-gray-100">
                 <Bars3Icon
                   aria-hidden="true"
                   className="h-5 w-5 text-gray-400"

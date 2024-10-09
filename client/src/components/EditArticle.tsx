@@ -161,6 +161,7 @@ const EditArticle: React.FC = () => {
           <label className="block mb-2">Thumbnail</label>
           <input
             type="file"
+            id="thumbnail"
             onChange={(e) => {
               if (e.target.files) {
                 setThumbnail(e.target.files[0]);
