@@ -2,18 +2,18 @@
 
 import { Router } from "express";
 import {
-  // createArticle,
+  createArticle,
   getArticlesByUserId,
   getArticleById,
-  // getArticles,
+  getArticles,
   updateArticle,
   deleteArticle,
 } from "../controllers/articleController";
 import { authenticateToken } from "../middlewares/authMiddleware";
 import upload from "../middlewares/upload";
-import { getArticles, createArticle } from "../controllers/djangocontroller";
+// import { getArticles, createArticle } from "../controllers/djangocontroller";
 
-const router = Router()
+const router = Router();
 
 // Public routes
 router.get("/articles", getArticles);
