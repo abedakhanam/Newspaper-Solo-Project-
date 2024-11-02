@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 // Define the expected shape of the JWT payload
-// Define the expected shape of the JWT payload
 interface JwtPayload {
   id: number;
   username: string; // Include username in the payload

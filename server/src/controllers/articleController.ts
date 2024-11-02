@@ -26,99 +26,14 @@ interface ArticleSource {
   createdAt: string;
   username?: string; // optional if not always included
 }
-
-// Get all the articles
-// export const getArticles = async (
-//   req: Request,
-//   res: Response
-// ): Promise<void> => {
-//   const { page = 1, limit = 10 } = req.query;
-
-//   const pageNumber = parseInt(page as string, 10);
-//   const limitNumber = parseInt(limit as string, 10);
-
-//   if (pageNumber < 1 || limitNumber < 1) {
-//     res.status(400).json({ error: 'Page and limit must be positive numbers' });
-//     return;
-//   }
-
-//   try {
-//     const offset = (pageNumber - 1) * limitNumber;
-//     const { count, rows } = await Article.findAndCountAll({
-//       attributes: ['id', 'title', 'description', 'thumbnailUrl', 'createdAt'],
-//       include: [
-//         {
-//           model: User,
-//           attributes: ['username'],
-//           as: 'author',
-//         },
-//       ],
-//       limit: limitNumber,
-//       offset: offset,
-//       order: [['createdAt', 'DESC']],
-//     });
-
-//     res.json({
-//       total: count,
-//       pages: Math.ceil(count / limitNumber),
-//       currentPage: pageNumber,
-//       articles: rows,
-//     });
-//   } catch (error) {
-//     console.error('Error fetching articles:', error);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
-// // // // Search for articles by title using Elasticsearch
-// export const searchArticles = async (
-//   req: Request,
-//   res: Response
-// ): Promise<void> => {
-//   const { search } = req.query;
-
-//   if (!search || typeof search !== 'string') {
-//     res
-//       .status(400)
-//       .json({ error: 'Search query is required and must be a string' });
-//     return;
-//   }
-
-//   try {
-//     const response: SearchResponse<any> = await client.search({
-//       index: 'articles', // Ensure this matches your index name
-//       body: {
-//         query: {
-//           bool: {
-//             should: [
-//               {
-//                 match_phrase_prefix: {
-//                   title: search, // Match on the title field
-//                 },
-//               },
-//               {
-//                 match_phrase_prefix: {
-//                   description: search, // Match on the description field
-//                 },
-//               },
-//             ],
-//           },
-//         },
-//       },
-//     });
-
-//     const articles = response.hits.hits.map((hit) => ({
-//       id: hit._id,
-//       title: hit._source.title,
-//       description: hit._source.description,
-//     }));
-
-//     res.json({ articles });
-//   } catch (error) {
-//     console.error('Error searching articles:', error);
-//     res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
+//
+//
+//
+//
+//
+//
+//
+//main controller
 // export const getArticles = async (
 //   req: Request,
 //   res: Response
@@ -129,160 +44,79 @@ interface ArticleSource {
 //   const limitNumber = parseInt(limit as string, 10);
 
 //   if (pageNumber < 1 || limitNumber < 1) {
-//     res.status(400).json({ error: 'Page and limit must be positive numbers' });
+//     res.status(400).json({ error: "Page and limit must be positive numbers" });
 //     return;
 //   }
 
 //   try {
 //     // If search query is provided, use Elasticsearch
-//     if (search && typeof search === 'string' && search.trim().length > 0) {
-//       const response: SearchResponse<any> = await client.search({
-//         index: 'articles',
+//     if (search && typeof search === "string" && search.trim().length > 0) {
+//       const response = await client.search({
+//         index: "articles",
 //         body: {
 //           query: {
 //             bool: {
 //               should: [
-//                 {
-//                   match_phrase_prefix: {
-//                     title: search,
-//                   },
-//                 },
-//                 {
-//                   match_phrase_prefix: {
-//                     description: search,
-//                   },
-//                 },
+//                 { match_phrase_prefix: { title: search } },
+//                 { match_phrase_prefix: { description: search } },
 //               ],
 //             },
 //           },
 //         },
 //       });
 
-//       const articles = response.hits.hits.map((hit) => ({
-//         id: hit._id,
-//         title: hit._source.title,
-//         description: hit._source.description,
-//         thumbnailUrl: hit._source.thumbnailUrl,
-//         createdAt: hit._source.createdAt,
-//       }));
+//       const articles = response.hits.hits.map((hit) => {
+//         const source = hit._source as ArticleSource;
+//         return {
+//           id: hit._id,
+//           title: source.title,
+//           description: source.description,
+//           thumbnailUrl: source.thumbnailUrl,
+//           createdAt: source.createdAt,
+//           author: { username: source.username || "Unknown" }, // Include username from Elasticsearch
+//         };
+//       });
 
 //       res.json({ articles });
 //       return;
 //     }
 
-//     // If no search query, fetch all articles
+//     // If no search query, fetch all articles from PostgreSQL
 //     const offset = (pageNumber - 1) * limitNumber;
 //     const { count, rows } = await Article.findAndCountAll({
-//       attributes: ['id', 'title', 'description', 'thumbnailUrl', 'createdAt'],
+//       attributes: ["id", "title", "description", "thumbnailUrl", "createdAt"],
 //       include: [
 //         {
 //           model: User,
-//           attributes: ['username'],
-//           as: 'author',
+//           attributes: ["username"],
+//           as: "author",
 //         },
 //       ],
 //       limit: limitNumber,
 //       offset: offset,
-//       order: [['createdAt', 'DESC']],
+//       order: [["createdAt", "DESC"]],
 //     });
+
+//     const articles = rows.map((article) => ({
+//       id: article.id,
+//       title: article.title,
+//       description: article.description,
+//       thumbnailUrl: article.thumbnailUrl,
+//       createdAt: article.createdAt,
+//       author: { username: article.author?.username || "Unknown" }, // Include username from PostgreSQL
+//     }));
 
 //     res.json({
 //       total: count,
 //       pages: Math.ceil(count / limitNumber),
 //       currentPage: pageNumber,
-//       articles: rows,
+//       articles,
 //     });
 //   } catch (error) {
-//     console.error('Error fetching articles:', error);
-//     res.status(500).json({ error: 'Internal server error' });
+//     console.error("Error fetching articles:", error);
+//     res.status(500).json({ error: "Internal server error" });
 //   }
 // };
-
-// Other controller methods remain unchanged...
-
-export const getArticles = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { page = 1, limit = 10, search } = req.query;
-
-  const pageNumber = parseInt(page as string, 10);
-  const limitNumber = parseInt(limit as string, 10);
-
-  if (pageNumber < 1 || limitNumber < 1) {
-    res.status(400).json({ error: "Page and limit must be positive numbers" });
-    return;
-  }
-
-  try {
-    // If search query is provided, use Elasticsearch
-    if (search && typeof search === "string" && search.trim().length > 0) {
-      const response = await client.search({
-        index: "articles",
-        body: {
-          query: {
-            bool: {
-              should: [
-                { match_phrase_prefix: { title: search } },
-                { match_phrase_prefix: { description: search } },
-              ],
-            },
-          },
-        },
-      });
-
-      const articles = response.hits.hits.map((hit) => {
-        const source = hit._source as ArticleSource;
-        return {
-          id: hit._id,
-          title: source.title,
-          description: source.description,
-          thumbnailUrl: source.thumbnailUrl,
-          createdAt: source.createdAt,
-          author: { username: source.username || "Unknown" }, // Include username from Elasticsearch
-        };
-      });
-
-      res.json({ articles });
-      return;
-    }
-
-    // If no search query, fetch all articles from PostgreSQL
-    const offset = (pageNumber - 1) * limitNumber;
-    const { count, rows } = await Article.findAndCountAll({
-      attributes: ["id", "title", "description", "thumbnailUrl", "createdAt"],
-      include: [
-        {
-          model: User,
-          attributes: ["username"],
-          as: "author",
-        },
-      ],
-      limit: limitNumber,
-      offset: offset,
-      order: [["createdAt", "DESC"]],
-    });
-
-    const articles = rows.map((article) => ({
-      id: article.id,
-      title: article.title,
-      description: article.description,
-      thumbnailUrl: article.thumbnailUrl,
-      createdAt: article.createdAt,
-      author: { username: article.author?.username || "Unknown" }, // Include username from PostgreSQL
-    }));
-
-    res.json({
-      total: count,
-      pages: Math.ceil(count / limitNumber),
-      currentPage: pageNumber,
-      articles,
-    });
-  } catch (error) {
-    console.error("Error fetching articles:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-};
 //
 
 // Define the View type here
